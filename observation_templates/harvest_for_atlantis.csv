@@ -1,0 +1,288 @@
+Time,Fishery,Group,biomass,source
+1948,bottom trawl,Cod,293334,MRI
+1949,bottom trawl,Cod,314554,MRI
+1950,bottom trawl,Cod,321450,MRI
+1951,bottom trawl,Cod,326939,MRI
+1952,bottom trawl,Cod,391930,MRI
+1953,bottom trawl,Cod,515211,MRI
+1954,bottom trawl,Cod,546252,MRI
+1955,bottom trawl,Cod,536768,MRI
+1956,bottom trawl,Cod,482164,MRI
+1957,bottom trawl,Cod,453036,MRI
+1958,bottom trawl,Cod,510514,MRI
+1959,bottom trawl,Cod,454225,MRI
+1960,bottom trawl,Cod,465023,MRI
+1961,bottom trawl,Cod,375898,MRI
+1962,bottom trawl,Cod,386956,MRI
+1963,bottom trawl,Cod,410274,MRI
+1964,bottom trawl,Cod,434992,MRI
+1965,bottom trawl,Cod,394047,MRI
+1966,bottom trawl,Cod,369124,MRI
+1967,bottom trawl,Cod,356956,MRI
+1968,bottom trawl,Cod,387600,MRI
+1969,bottom trawl,Cod,410497,MRI
+1970,bottom trawl,Cod,478977,MRI
+1971,bottom trawl,Cod,458326,MRI
+1972,bottom trawl,Cod,406418,MRI
+1973,bottom trawl,Cod,386990,MRI
+1974,bottom trawl,Cod,384499,MRI
+1975,bottom trawl,Cod,382127,MRI
+1976,bottom trawl,Cod,358976,MRI
+1977,bottom trawl,Cod,352204,MRI
+1978,bottom trawl,Cod,339616,MRI
+1979,bottom trawl,Cod,381527,MRI
+1980,bottom trawl,Cod,452078,MRI
+1981,bottom trawl,Cod,488028,MRI
+1982,bottom trawl,Cod,388416,MRI
+1983,bottom trawl,Cod,298842,MRI
+1984,bottom trawl,Cod,284082,MRI
+1985,bottom trawl,Cod,325210,MRI
+1986,bottom trawl,Cod,368702,MRI
+1987,bottom trawl,Cod,393469,MRI
+1988,bottom trawl,Cod,382967,MRI
+1989,bottom trawl,Cod,356520,MRI
+1990,bottom trawl,Cod,335913,MRI
+1991,bottom trawl,Cod,308757,MRI
+1992,bottom trawl,Cod,267689,MRI
+1993,bottom trawl,Cod,258668,MRI
+1994,bottom trawl,Cod,190917,MRI
+1995,bottom trawl,Cod,178037,MRI
+1996,bottom trawl,Cod,194198,MRI
+1997,bottom trawl,Cod,211497,MRI
+1998,bottom trawl,Cod,252430,MRI
+1999,bottom trawl,Cod,264902,MRI
+2000,bottom trawl,Cod,236921,MRI
+2001,bottom trawl,Cod,243704,MRI
+2002,bottom trawl,Cod,221375,MRI
+2003,bottom trawl,Cod,217569,MRI
+2004,bottom trawl,Cod,234747,MRI
+2005,bottom trawl,Cod,212719,MRI
+2006,bottom trawl,Cod,196523,MRI
+2007,bottom trawl,Cod,174046,MRI
+2008,bottom trawl,Cod,154015,MRI
+2009,bottom trawl,Cod,182830,MRI
+2010,bottom trawl,Cod,169230,MRI
+2011,bottom trawl,Cod,171565,MRI
+2012,bottom trawl,Cod,195693,MRI
+2013,bottom trawl,Cod,223249,MRI
+2014,bottom trawl,Cod,221390,MRI
+2015,bottom trawl,Cod,230029,MRI
+2016,bottom trawl,Cod,250718,MRI
+2017,bottom trawl,Cod,243575,MRI
+2018,bottom trawl,Cod,266901,MRI
+2019,bottom trawl,Cod,262650,MRI
+2020,bottom trawl,Cod,269581,MRI
+2021,bottom trawl,Cod,265451,MRI
+1948,longline,Haddock,51905,MRI
+1949,longline,Haddock,66537,MRI
+1950,longline,Haddock,60373,MRI
+1951,longline,Haddock,54351,MRI
+1952,longline,Haddock,44952,MRI
+1953,longline,Haddock,53295,MRI
+1954,longline,Haddock,62056,MRI
+1955,longline,Haddock,64341,MRI
+1956,longline,Haddock,61898,MRI
+1957,longline,Haddock,76413,MRI
+1958,longline,Haddock,70152,MRI
+1959,longline,Haddock,63699,MRI
+1960,longline,Haddock,86427,MRI
+1961,longline,Haddock,108344,MRI
+1962,longline,Haddock,119603,MRI
+1963,longline,Haddock,102562,MRI
+1964,longline,Haddock,99247,MRI
+1965,longline,Haddock,61649,MRI
+1966,longline,Haddock,60834,MRI
+1967,longline,Haddock,61146,MRI
+1968,longline,Haddock,51434,MRI
+1969,longline,Haddock,46422,MRI
+1970,longline,Haddock,44753,MRI
+1971,longline,Haddock,46224,MRI
+1972,longline,Haddock,40287,MRI
+1973,longline,Haddock,47070,MRI
+1974,longline,Haddock,44179,MRI
+1975,longline,Haddock,47578,MRI
+1976,longline,Haddock,44185,MRI
+1977,longline,Haddock,41828,MRI
+1978,longline,Haddock,46849,MRI
+1979,longline,Haddock,59332,MRI
+1980,longline,Haddock,53870,MRI
+1981,longline,Haddock,67125,MRI
+1982,longline,Haddock,69385,MRI
+1983,longline,Haddock,65870,MRI
+1984,longline,Haddock,48236,MRI
+1985,longline,Haddock,50952,MRI
+1986,longline,Haddock,48880,MRI
+1987,longline,Haddock,41032,MRI
+1988,longline,Haddock,54148,MRI
+1989,longline,Haddock,62804,MRI
+1990,longline,Haddock,67116,MRI
+1991,longline,Haddock,54716,MRI
+1992,longline,Haddock,47237,MRI
+1993,longline,Haddock,48909,MRI
+1994,longline,Haddock,61609,MRI
+1995,longline,Haddock,61526,MRI
+1996,longline,Haddock,57224,MRI
+1997,longline,Haddock,44164,MRI
+1998,longline,Haddock,41528,MRI
+1999,longline,Haddock,45610,MRI
+2000,longline,Haddock,41402,MRI
+2001,longline,Haddock,40219,MRI
+2002,longline,Haddock,50524,MRI
+2003,longline,Haddock,61036,MRI
+2004,longline,Haddock,84935,MRI
+2005,longline,Haddock,97445,MRI
+2006,longline,Haddock,97725,MRI
+2007,longline,Haddock,109881,MRI
+2008,longline,Haddock,102888,MRI
+2009,longline,Haddock,82268,MRI
+2010,longline,Haddock,64238,MRI
+2011,longline,Haddock,49449,MRI
+2012,longline,Haddock,46050,MRI
+2013,longline,Haddock,44047,MRI
+2014,longline,Haddock,33935,MRI
+2015,longline,Haddock,39665,MRI
+2016,longline,Haddock,38100,MRI
+2017,longline,Haddock,37062,MRI
+2018,longline,Haddock,48865,MRI
+2019,longline,Haddock,58044,MRI
+2020,longline,Haddock,54781,MRI
+2021,longline,Haddock,57597,MRI
+1948,bottom trawl,Saithe,108740,MRI
+1949,bottom trawl,Saithe,84755,MRI
+1950,bottom trawl,Saithe,53150,MRI
+1951,bottom trawl,Saithe,74096,MRI
+1952,bottom trawl,Saithe,88317,MRI
+1953,bottom trawl,Saithe,73151,MRI
+1954,bottom trawl,Saithe,69629,MRI
+1955,bottom trawl,Saithe,47843,MRI
+1956,bottom trawl,Saithe,67860,MRI
+1957,bottom trawl,Saithe,62061,MRI
+1958,bottom trawl,Saithe,53178,MRI
+1959,bottom trawl,Saithe,48479,MRI
+1960,bottom trawl,Saithe,48039,MRI
+1961,bottom trawl,Saithe,49795,MRI
+1962,bottom trawl,Saithe,50385,MRI
+1963,bottom trawl,Saithe,48449,MRI
+1964,bottom trawl,Saithe,60417,MRI
+1965,bottom trawl,Saithe,60107,MRI
+1966,bottom trawl,Saithe,52644,MRI
+1967,bottom trawl,Saithe,76844,MRI
+1968,bottom trawl,Saithe,78801,MRI
+1969,bottom trawl,Saithe,116601,MRI
+1970,bottom trawl,Saithe,116892,MRI
+1971,bottom trawl,Saithe,136662,MRI
+1972,bottom trawl,Saithe,113089,MRI
+1973,bottom trawl,Saithe,113493,MRI
+1974,bottom trawl,Saithe,101144,MRI
+1975,bottom trawl,Saithe,91034,MRI
+1976,bottom trawl,Saithe,83845,MRI
+1977,bottom trawl,Saithe,64038,MRI
+1978,bottom trawl,Saithe,52636,MRI
+1979,bottom trawl,Saithe,67827,MRI
+1980,bottom trawl,Saithe,60554,MRI
+1981,bottom trawl,Saithe,60695,MRI
+1982,bottom trawl,Saithe,68879,MRI
+1983,bottom trawl,Saithe,58266,MRI
+1984,bottom trawl,Saithe,62725,MRI
+1985,bottom trawl,Saithe,57107,MRI
+1986,bottom trawl,Saithe,64881,MRI
+1987,bottom trawl,Saithe,80509,MRI
+1988,bottom trawl,Saithe,77251,MRI
+1989,bottom trawl,Saithe,82372,MRI
+1990,bottom trawl,Saithe,98081,MRI
+1991,bottom trawl,Saithe,102307,MRI
+1992,bottom trawl,Saithe,79518,MRI
+1993,bottom trawl,Saithe,71138,MRI
+1994,bottom trawl,Saithe,64937,MRI
+1995,bottom trawl,Saithe,49142,MRI
+1996,bottom trawl,Saithe,40652,MRI
+1997,bottom trawl,Saithe,37515,MRI
+1998,bottom trawl,Saithe,31709,MRI
+1999,bottom trawl,Saithe,31648,MRI
+2000,bottom trawl,Saithe,33110,MRI
+2001,bottom trawl,Saithe,32121,MRI
+2002,bottom trawl,Saithe,42184,MRI
+2003,bottom trawl,Saithe,52406,MRI
+2004,bottom trawl,Saithe,63750,MRI
+2005,bottom trawl,Saithe,68559,MRI
+2006,bottom trawl,Saithe,75670,MRI
+2007,bottom trawl,Saithe,64428,MRI
+2008,bottom trawl,Saithe,70324,MRI
+2009,bottom trawl,Saithe,61539,MRI
+2010,bottom trawl,Saithe,54221,MRI
+2011,bottom trawl,Saithe,51216,MRI
+2012,bottom trawl,Saithe,51867,MRI
+2013,bottom trawl,Saithe,58442,MRI
+2014,bottom trawl,Saithe,46488,MRI
+2015,bottom trawl,Saithe,48475,MRI
+2016,bottom trawl,Saithe,49207,MRI
+2017,bottom trawl,Saithe,49064,MRI
+2018,bottom trawl,Saithe,66249,MRI
+2019,bottom trawl,Saithe,64532,MRI
+2020,bottom trawl,Saithe,50253,MRI
+2021,bottom trawl,Saithe,59770,MRI
+1948,bottom trawl,Redfish,68120.40336,MRI
+1949,bottom trawl,Redfish,95296.40336,MRI
+1950,bottom trawl,Redfish,126361.1176,MRI
+1951,bottom trawl,Redfish,167287.1176,MRI
+1952,bottom trawl,Redfish,127679.1176,MRI
+1953,bottom trawl,Redfish,159469.1176,MRI
+1954,bottom trawl,Redfish,162726.1176,MRI
+1955,bottom trawl,Redfish,189408.1176,MRI
+1956,bottom trawl,Redfish,155057.1176,MRI
+1957,bottom trawl,Redfish,124726.1176,MRI
+1958,bottom trawl,Redfish,115138.1176,MRI
+1959,bottom trawl,Redfish,113992.1176,MRI
+1960,bottom trawl,Redfish,121486.1176,MRI
+1961,bottom trawl,Redfish,94372.11765,MRI
+1962,bottom trawl,Redfish,103618.1176,MRI
+1963,bottom trawl,Redfish,128424.1176,MRI
+1964,bottom trawl,Redfish,138060.1176,MRI
+1965,bottom trawl,Redfish,151151.1176,MRI
+1966,bottom trawl,Redfish,130859.1176,MRI
+1967,bottom trawl,Redfish,128792.1176,MRI
+1968,bottom trawl,Redfish,120100.1176,MRI
+1969,bottom trawl,Redfish,118583.1176,MRI
+1970,bottom trawl,Redfish,97604.11765,MRI
+1971,bottom trawl,Redfish,103276.1176,MRI
+1972,bottom trawl,Redfish,91795.11765,MRI
+1973,bottom trawl,Redfish,78202.11765,MRI
+1974,bottom trawl,Redfish,83990.11765,MRI
+1975,bottom trawl,Redfish,93059.11765,MRI
+1976,bottom trawl,Redfish,123965.1176,MRI
+1977,bottom trawl,Redfish,77172.11765,MRI
+1978,bottom trawl,Redfish,53165.11765,MRI
+1979,bottom trawl,Redfish,85349.11765,MRI
+1980,bottom trawl,Redfish,99819.11765,MRI
+1981,bottom trawl,Redfish,122111.1176,MRI
+1982,bottom trawl,Redfish,149340.1176,MRI
+1983,bottom trawl,Redfish,144005.1176,MRI
+1984,bottom trawl,Redfish,120973.1176,MRI
+1985,bottom trawl,Redfish,103837.1176,MRI
+1986,bottom trawl,Redfish,96406.11765,MRI
+1987,bottom trawl,Redfish,96292.11765,MRI
+1988,bottom trawl,Redfish,104193.1176,MRI
+1989,bottom trawl,Redfish,97393.11765,MRI
+1990,bottom trawl,Redfish,95123.11765,MRI
+1991,bottom trawl,Redfish,104170.1176,MRI
+1992,bottom trawl,Redfish,99532.11765,MRI
+1993,bottom trawl,Redfish,101917.1176,MRI
+1994,bottom trawl,Redfish,99553.11765,MRI
+1995,bottom trawl,Redfish,93315.11765,MRI
+1996,bottom trawl,Redfish,70696,MRI
+1997,bottom trawl,Redfish,78253,MRI
+1998,bottom trawl,Redfish,73564,MRI
+1999,bottom trawl,Redfish,70355,MRI
+2000,bottom trawl,Redfish,74394,MRI
+2001,bottom trawl,Redfish,54043,MRI
+2002,bottom trawl,Redfish,69765,MRI
+2003,bottom trawl,Redfish,66733,MRI
+2004,bottom trawl,Redfish,50499,MRI
+2005,bottom trawl,Redfish,65759,MRI
+2006,bottom trawl,Redfish,59428,MRI
+2007,bottom trawl,Redfish,56532,MRI
+2008,bottom trawl,Redfish,70330,MRI
+2009,bottom trawl,Redfish,58594,MRI
+2010,bottom trawl,Redfish,58668,MRI
+2011,bottom trawl,Redfish,58437,MRI
+2012,bottom trawl,Redfish,58053,MRI
