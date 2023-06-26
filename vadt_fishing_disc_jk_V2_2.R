@@ -1067,7 +1067,7 @@ vadt <- function(obj, outdir, anim = NULL) {
 
       # Structural nitrogen
       output$structn <- renderPlot({
-        sn_ids <- paste(input$sn, 1:max(obj$totalnums$Age), "_StructN", sep = "")
+        sn_ids <- paste(input$sn, 1:16, "_StructN", sep = "")
         dat_sn <- subset(obj$structN, .id %in% sn_ids)
         ggplot(data = dat_sn, aes(y = V1, x = Time)) +
           geom_line(aes(group = Ageclass, color = Ageclass), linewidth = 2, alpha = .75) +
@@ -1083,13 +1083,13 @@ vadt <- function(obj, outdir, anim = NULL) {
 
       # Reserve nitrogen
       output$reserven <- renderPlot({
-        rn_ids <- paste(input$sn, 1:max(obj$totalnums$Age), "_ResN", sep = "")
+        rn_ids <- paste(input$sn, 1:16, "_ResN", sep = "")
         dat_rn <- subset(obj$reserve, .id %in% rn_ids)
         ggplot(data = dat_rn, aes(y = V1, x = Time)) +
           geom_line(aes(group = Ageclass, color = Ageclass), linewidth = 2, alpha = .75) +
           scale_x_continuous(breaks = round(as.numeric(quantile(dat_rn$Time, probs = seq(0, 1, .2))))) +
           ylab("Reserve Nitrogen (mg N)") +
-          scale_color_viridis(discrete = TRUE) + ## scale_color_brewer(name = "Ageclass", type = "div", palette = 5, labels = 1:max(obj$totalnums$Age)) +  jk 2/23
+          scale_color_viridis(discrete = TRUE) + ## scale_color_brewer(name = "Ageclass", type = "div", palette = 5, labels = 1:16) +  jk 2/23
           theme_bw() +
           guides(fill = guide_legend(override.aes = list(colour = NULL))) +
           theme(panel.background = element_blank(), legend.key = element_rect(), legend.background = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), axis.line = element_line(linewidth = .2)) +
@@ -1101,11 +1101,11 @@ vadt <- function(obj, outdir, anim = NULL) {
 
       # Total Biomass
       output$totalbio <- renderPlot({
-        sn_ids <- paste(input$sn, 1:max(obj$totalnums$Age), "_StructN", sep = "")
+        sn_ids <- paste(input$sn, 1:16, "_StructN", sep = "")
         sn <- subset(obj$structN, .id %in% sn_ids)
-        rn_ids <- paste(input$sn, 1:max(obj$totalnums$Age), "_ResN", sep = "") ##changed $rn to $sn ##here
+        rn_ids <- paste(input$sn, 1:16, "_ResN", sep = "") ##changed $rn to $sn ##here
         rn <- subset(obj$reserveN, .id %in% rn_ids)
-        totn_ids <- paste(input$sn, 1:max(obj$totalnums$Age), "_Nums", sep = "")
+        totn_ids <- paste(input$sn, 1:16, "_Nums", sep = "")
         dat_tn <- subset(obj$totalnums, .id %in% totn_ids)
         dat_tn$V1 <- ((sn$V1 + rn$V1) * 5.7 * 20) / 1e3 * dat_tn$V1 / 1e6 ##rn$V1 is not working
         ggplot(data = dat_tn, aes(y = V1, x = Time)) +
@@ -1113,7 +1113,7 @@ vadt <- function(obj, outdir, anim = NULL) {
           geom_density(stat = "identity", aes(fill = Ageclass), position = "fill", alpha = .75, linewidth = .2) +
           scale_x_continuous(breaks = round(as.numeric(quantile(dat_tn$Time, probs = seq(0, 1, .2))))) +
           ylab("Total Biomass (Tons)") +
-          scale_color_viridis(discrete = TRUE) + ## scale_color_brewer(name = "Ageclass", type = "div", palette = 5, labels = 1:max(obj$totalnums$Age)) +  jk 2/23
+          scale_color_viridis(discrete = TRUE) + ## scale_color_brewer(name = "Ageclass", type = "div", palette = 5, labels = 1:16) +  jk 2/23
           theme_bw() +
           guides(fill = guide_legend(override.aes = list(colour = NULL))) +
           theme(panel.background = element_blank(), legend.key = element_rect(), legend.background = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), axis.line = element_line(linewidth = .2, color = "black")) +
@@ -1125,11 +1125,11 @@ vadt <- function(obj, outdir, anim = NULL) {
 
       # Tot number
       output$totalnum <- renderPlot({
-        totn_ids <- paste(input$sn, 1:max(obj$totalnums$Age), "_Nums", sep = "")
+        totn_ids <- paste(input$sn, 1:16, "_Nums", sep = "")
         dat_totn <- subset(obj$totalnums, .id %in% totn_ids)
         ggplot(dat_totn, aes(y = V1, x = Time, group = Ageclass, color = Ageclass)) +
           geom_line(linewidth = 2, alpha = .75) +
-          scale_color_viridis(discrete = TRUE) + ## scale_color_brewer(name = "Ageclass", type = "div", palette = 5, labels = 1:max(obj$totalnums$Age)) + jk 2/23
+          scale_color_viridis(discrete = TRUE) + ## scale_color_brewer(name = "Ageclass", type = "div", palette = 5, labels = 1:16) + jk 2/23
           ylab("Total numbers") +
           theme_bw() +
           scale_x_continuous(breaks = round(as.numeric(quantile(dat_totn$Time, probs = seq(0, 1, .2))))) +
@@ -1147,7 +1147,7 @@ vadt <- function(obj, outdir, anim = NULL) {
 
       # Total Prop
       output$totalprop <- renderPlot({
-        totn_ids <- paste(input$sn, 1:max(obj$totalnums$Age), "_Nums", sep = "")
+        totn_ids <- paste(input$sn, 1:16, "_Nums", sep = "")
         dat_totn <- subset(obj$totalnums, .id %in% totn_ids)
         ggplot(dat_totn, aes(y = V1, x = Time)) +
           geom_density(stat = "identity", aes(fill = Ageclass), position = "fill", alpha = .75, linewidth = .2) +
@@ -1163,7 +1163,7 @@ vadt <- function(obj, outdir, anim = NULL) {
 
       ## Length-At-Age plot
       output$lw_plot <- renderPlot({
-        sn_ids <- paste(input$sn, 1:max(obj$totalnums$Age), "_StructN", sep = "")
+        sn_ids <- paste(input$sn, 1:16, "_StructN", sep = "")
         lw_data <- subset(obj$structN, .id %in% sn_ids)
         lw_data$wt_grams <- 3.65 * lw_data$V1 * 5.7 * 20 / 1000
         fg_name <- obj$fun_group[str_trim(obj$fun_group$Name) == input$sn, 1]
@@ -1175,7 +1175,7 @@ vadt <- function(obj, outdir, anim = NULL) {
           geom_line(aes(group = Ageclass, color = Ageclass), linewidth = 2, alpha = .75) +
           scale_x_continuous(breaks = round(as.numeric(quantile(lw_data$Time, probs = seq(0, 1, .2))))) +
           ylab("Length-At-Age (cm)") +
-          scale_color_viridis(discrete = TRUE) + ## scale_color_brewer(name = "Ageclass", type = "div", palette = 5, labels = 1:max(obj$totalnums$Age)) +
+          scale_color_viridis(discrete = TRUE) + ## scale_color_brewer(name = "Ageclass", type = "div", palette = 5, labels = 1:16) +
           theme_bw() +
           guides(fill = guide_legend(override.aes = list(colour = NULL))) +
           theme(panel.background = element_blank(), legend.key = element_rect(), legend.background = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), axis.line = element_line(linewidth = .2, color = "black")) +
@@ -1183,7 +1183,7 @@ vadt <- function(obj, outdir, anim = NULL) {
       })
 
       output$structng <- renderPlot({
-        sn_ids <- paste(input$snwet, 1:max(obj$totalnums$Age), "_StructN", sep = "")
+        sn_ids <- paste(input$snwet, 1:16, "_StructN", sep = "")
         dat_sn <- subset(obj$structN, .id %in% sn_ids)
         ggplot(data = dat_sn, aes(y = (V1 * 5.7 * 20) / 100, x = Time)) +
           geom_line(aes(group = Ageclass, color = Ageclass), linewidth = 2, alpha = .75) +
@@ -1198,7 +1198,7 @@ vadt <- function(obj, outdir, anim = NULL) {
 
       # Reserve nitrogen
       output$reserveng <- renderPlot({
-        rn_ids <- paste(input$snwet, 1:max(obj$totalnums$Age), "_ResN", sep = "")
+        rn_ids <- paste(input$snwet, 1:16, "_ResN", sep = "")
         dat_rn <- subset(obj$reserve, .id %in% rn_ids)
         ggplot(data = dat_rn, aes(y = (V1 * 5.7 * 20) / 100, x = Time)) +
           geom_line(aes(group = Ageclass, color = Ageclass), linewidth = 2, alpha = .75) +
@@ -1214,18 +1214,18 @@ vadt <- function(obj, outdir, anim = NULL) {
 
       # Total Biomass
       output$totalbiog <- renderPlot({
-        sn_ids <- paste(input$snwet, 1:max(obj$totalnums$Age), "_StructN", sep = "")
+        sn_ids <- paste(input$snwet, 1:16, "_StructN", sep = "")
         sn <- subset(obj$structN, .id %in% sn_ids)
-        rn_ids <- paste(input$snwet, 1:max(obj$totalnums$Age), "_ResN", sep = "") ##jk 2/23 from "_ReserveN"
+        rn_ids <- paste(input$snwet, 1:16, "_ResN", sep = "") ##jk 2/23 from "_ReserveN"
         rn <- subset(obj$reserveN, .id %in% rn_ids) ##changed from structN and sn_ids
-        totn_ids <- paste(input$snwet, 1:max(obj$totalnums$Age), "_Nums", sep = "")
+        totn_ids <- paste(input$snwet, 1:16, "_Nums", sep = "")
         dat_tn <- subset(obj$totalnums, .id %in% totn_ids)
         dat_tn$V1 <- ((rn$V1 + sn$V1) * 5.7 * 20) / 1e3 * dat_tn$V1 / 1e6
         ggplot(data = dat_tn, aes(y = V1, x = Time)) +
           geom_line(aes(color = Ageclass), linewidth = 2, alpha = .75) +
           scale_x_continuous(breaks = round(as.numeric(quantile(dat_tn$Time, probs = seq(0, 1, .2))))) +
           ylab("Total Biomass (Tons)") +
-          scale_color_viridis(discrete = TRUE) + ##          scale_color_brewer(name = "Ageclass", type = "div", palette = 5, labels = 1:max(obj$totalnums$Age)) +
+          scale_color_viridis(discrete = TRUE) + ##          scale_color_brewer(name = "Ageclass", type = "div", palette = 5, labels = 1:16) +
           theme_bw() +
           guides(fill = guide_legend(override.aes = list(colour = NULL))) +
           theme(panel.background = element_blank(), legend.key = element_rect(), legend.background = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), axis.line = element_line(linewidth = .2, color = "black")) +
@@ -1236,11 +1236,11 @@ vadt <- function(obj, outdir, anim = NULL) {
 
       # Tot number
       output$totalnumg <- renderPlot({
-        totn_ids <- paste(input$snwet, 1:max(obj$totalnums$Age), "_Nums", sep = "")
+        totn_ids <- paste(input$snwet, 1:16, "_Nums", sep = "")
         dat_totn <- subset(obj$totalnums, .id %in% totn_ids)
         ggplot(dat_totn, aes(y = V1, x = Time, group = .id, color = Ageclass)) +
           geom_line(linewidth = 2, alpha = .75) +
-          scale_color_viridis(discrete = TRUE) + ##          scale_color_brewer(name = "Ageclass", type = "div", palette = 5, labels = 1:max(obj$totalnums$Age)) +
+          scale_color_viridis(discrete = TRUE) + ##          scale_color_brewer(name = "Ageclass", type = "div", palette = 5, labels = 1:16) +
           ylab("Total numbers") +
           theme_bw() +
           scale_x_continuous(breaks = round(as.numeric(quantile(dat_totn$Time, probs = seq(0, 1, .2))))) +
@@ -1252,11 +1252,11 @@ vadt <- function(obj, outdir, anim = NULL) {
 
       # Total Prop
       output$totalpropg <- renderPlot({
-        totn_ids <- paste(input$snwet, 1:max(obj$totalnums$Age), "_Nums", sep = "")
+        totn_ids <- paste(input$snwet, 1:16, "_Nums", sep = "")
         dat_totn <- subset(obj$totalnums, .id %in% totn_ids)
         ggplot(dat_totn, aes(y = V1, x = Time)) +
           geom_density(stat = "identity", aes(fill = Ageclass), position = "fill", alpha = .75, linewidth = .2) +
-          scale_fill_viridis(discrete = TRUE) + ##          scale_fill_brewer(name = "Ageclass", type = "div", palette = 5, labels = 1:max(obj$totalnums$Age)) +
+          scale_fill_viridis(discrete = TRUE) + ##          scale_fill_brewer(name = "Ageclass", type = "div", palette = 5, labels = 1:16) +
           ylab("Proportion of total numbers") +
           theme_bw() +
           scale_x_continuous(breaks = round(as.numeric(quantile(dat_totn$Time, probs = seq(0, 1, .2))))) +
@@ -1267,7 +1267,7 @@ vadt <- function(obj, outdir, anim = NULL) {
 
       ## Length-At-Age plot
       output$lw_plotg <- renderPlot({
-        sn_ids <- paste(input$snwet, 1:max(obj$totalnums$Age), "_StructN", sep = "")
+        sn_ids <- paste(input$snwet, 1:16, "_StructN", sep = "")
         lw_data <- subset(obj$structN, .id %in% sn_ids)
         lw_data$wt_grams <- 3.65 * lw_data$V1 * 5.7 * 20 / 1000
         fg_name <- obj$fun_group[str_trim(obj$fun_group$Name) == input$snwet, 1]
@@ -1279,7 +1279,7 @@ vadt <- function(obj, outdir, anim = NULL) {
           geom_line(aes(group = Ageclass, color = Ageclass), linewidth = 2, alpha = .75) +
           scale_x_continuous(breaks = round(as.numeric(quantile(lw_data$Time, probs = seq(0, 1, .2))))) +
           ylab("Length-At-Age (cm)") +
-          scale_color_viridis(discrete = TRUE) + ##          scale_color_brewer(name = "Ageclass", type = "div", palette = 5, labels = 1:max(obj$totalnums$Age)) +
+          scale_color_viridis(discrete = TRUE) + ##          scale_color_brewer(name = "Ageclass", type = "div", palette = 5, labels = 1:16) +
           theme_bw() +
           guides(fill = guide_legend(override.aes = list(colour = NULL))) +
           theme(panel.background = element_blank(), legend.key = element_rect(), legend.background = element_blank(), panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank(), axis.line = element_line(linewidth = .2, color = "black")) +
@@ -1292,7 +1292,7 @@ vadt <- function(obj, outdir, anim = NULL) {
 
       # Structural nitrogen
       output$structn_rel <- renderPlot({
-        sn_ids <- paste(input$rel, 1:max(obj$totalnums$Age), "_StructN", sep = "")
+        sn_ids <- paste(input$rel, 1:16, "_StructN", sep = "")
         dat_sn <- subset(obj$structN, .id %in% sn_ids)
         dat_sn$rel <- NA
         for (i in as.character(unique(dat_sn$.id))) {
@@ -1316,7 +1316,7 @@ vadt <- function(obj, outdir, anim = NULL) {
 
       # Reserve nitrogen
       output$reserven_rel <- renderPlot({
-        rn_ids <- paste(input$rel, 1:max(obj$totalnums$Age), "_ResN", sep = "")
+        rn_ids <- paste(input$rel, 1:16, "_ResN", sep = "")
         dat_rn <- subset(obj$reserveN, .id %in% rn_ids)
         dat_rn$rel <- NA
         for (i in as.character(unique(dat_rn$.id))) {
@@ -1338,8 +1338,8 @@ vadt <- function(obj, outdir, anim = NULL) {
 
       # Reserve nitrogen relative
       output$rn_rel <- renderPlot({
-        rn_ids <- paste(input$rel_rn, 1:max(obj$totalnums$Age), "_ResN", sep = "")
-        sn_ids <- paste(input$rel_rn, 1:max(obj$totalnums$Age), "_StructN", sep = "")
+        rn_ids <- paste(input$rel_rn, 1:16, "_ResN", sep = "")
+        sn_ids <- paste(input$rel_rn, 1:16, "_StructN", sep = "")
         dat_rn <- subset(obj$reserveN, .id %in% rn_ids)
         dat_sn <- subset(obj$structN, .id %in% sn_ids)
         dat_rn$sn <- dat_sn$V1
@@ -1360,8 +1360,8 @@ vadt <- function(obj, outdir, anim = NULL) {
 
       # Partitioning of weight
       output$FRC <- renderPlot({
-        rn_ids <- paste(input$rel_rn, 1:max(obj$totalnums$Age), "_ResN", sep = "")
-        sn_ids <- paste(input$rel_rn, 1:max(obj$totalnums$Age), "_StructN", sep = "")
+        rn_ids <- paste(input$rel_rn, 1:16, "_ResN", sep = "")
+        sn_ids <- paste(input$rel_rn, 1:16, "_StructN", sep = "")
         dat_rn <- subset(obj$reserveN, .id %in% rn_ids)
         dat_sn <- subset(obj$structN, .id %in% sn_ids)
         dat_rn$sn <- dat_sn$V1
@@ -1388,92 +1388,53 @@ vadt <- function(obj, outdir, anim = NULL) {
 
         ## NAA ###this should be corrected, right now hard coded for only cod, haddock and saithe having NAA forced fix
         output$NumAA <- renderPlot({
-            species.miss <- setdiff(unique(str_extract(obj$totalnums$.id, "^\\D+")),
-                                    obj$naa$species)
-            species.miss <- tibble(Time = min(obj$totalnums$Time),
-                                   species = species.miss,
-                                   Age = 1,
-                                   numbers = 0,
-                                   .id = paste0(species, "1_Nums"),
-                                   Ageclass = 'Ageclass 1')
-            obj$naa  <- bind_rows(obj$naa,
-                                  species.miss)
-            naa_ids  <- paste(input$snaa, 1:max(obj$totalnums$Age), "_Nums", sep = "")
+            naa_ids <- paste(input$snaa, 1:16, "_Nums", sep = "")
             naa_totn <- subset(obj$totalnums, .id %in% naa_ids)
-            naa.t  <- subset(obj$naa, .id %in% naa_ids)
-            naa_totn <-
-                if(dim(naa.t)[1] > 1){
-                    bind_rows(naa_totn %>%
-                              filter(Age < max(naa.t$Age)),
-                              naa_totn %>%
-                              filter(Age >= max(naa.t$Age)) %>%
-                              group_by(Time) %>%
-                              dplyr::mutate(V1 = sum(V1)) %>%
-                              filter(Age == max(naa.t$Age)))} else {
-                                                                naa_totn}
-            ggplot(naa_totn, aes(y = V1, x = Time)) +
-                geom_line(linewidth = 1, alpha = .75) +
-                geom_line(aes(y = numbers, x = Time), data = naa.t, color = "grey") +
-                facet_wrap(. ~ as.factor(Ageclass), scales = "free_y", ncol = 2) +
-                ylab("NAA") +
-                theme_bw() +
-                scale_x_continuous(breaks =
-                                       round(as.numeric(quantile(naa_totn$Time,
-                                                                 probs = seq(0, 1, .2))))) +
-                guides(fill = guide_legend(override.aes = list(colour = NULL))) +
-                theme(panel.background = element_blank(),
-                      legend.background = element_blank(),
-                      panel.grid.major = element_blank(),
-                      panel.grid.minor = element_blank(),
-                      panel.border = element_blank(),
-                      axis.line = element_line(linewidth = .2)) +
-                xlab("Year")
+            naatmp <- subset(obj$naa, .id %in% naa_ids)
+            if(as.character(naatmp$.id[1]) == as.character(naa_totn$.id[1])) {
+                naa.t <- subset(obj$naa, .id %in% naa_ids)
+                naa_totn <- bind_rows(naa_totn %>%
+                                      filter(Age < max(naa.t$Age)),
+                                      naa_totn %>%
+                                      filter(Age >= max(naa.t$Age)) %>%
+                                      group_by(Time) %>%
+                                      dplyr::mutate(V1 = sum(V1)) %>%
+                                      filter(Age == max(naa.t$Age)))
+                ggplot(naa_totn, aes(y = V1, x = Time)) +
+                    geom_line(linewidth = 1, alpha = .75) +
+                    geom_line(aes(y = numbers, x = Time), data = naa.t, color = "grey") +
+                    facet_wrap(. ~ as.factor(Ageclass), scales = "free_y", ncol = 2) +
+                    ylab("NAA") +
+                    theme_bw() +
+                    scale_x_continuous(breaks =
+                                           round(as.numeric(quantile(naa_totn$Time,
+                                                                     probs = seq(0, 1, .2))))) +
+                    guides(fill = guide_legend(override.aes = list(colour = NULL))) +
+                    theme(panel.background = element_blank(),
+                          legend.background = element_blank(),
+                          panel.grid.major = element_blank(),
+                          panel.grid.minor = element_blank(),
+                          panel.border = element_blank(),
+                          axis.line = element_line(linewidth = .2)) +
+                    xlab("Year")} else {
+                                    ggplot(naa_totn, aes(y = V1, x = Time)) +
+                                        geom_line(linewidth = 1, alpha = .75) +
+                                        facet_wrap(. ~ as.factor(Ageclass), scales = "free_y", ncol = 2) +
+                                        ylab("NAA") +
+                                        theme_bw() +
+                                        scale_x_continuous(breaks =
+                                                               round(as.numeric(quantile(naa_totn$Time,
+                                                                                         probs = seq(0, 1, .2))))) +
+                                        guides(fill = guide_legend(override.aes = list(colour = NULL))) +
+                                        theme(panel.background = element_blank(),
+                                              legend.background = element_blank(),
+                                              panel.grid.major = element_blank(),
+                                              panel.grid.minor = element_blank(),
+                                              panel.border = element_blank(),
+                                              axis.line = element_line(linewidth = .2)) +
+                                        xlab("Year")
+                                }
             })
-
-            ## if(as.character(naatmp$.id[1]) == as.character(naa_totn$.id[1])) {
-            ##     naa.t <- subset(obj$naa, .id %in% naa_ids)
-            ##     naa_totn <- bind_rows(naa_totn %>%
-            ##                           filter(Age < max(naa.t$Age)),
-            ##                           naa_totn %>%
-            ##                           filter(Age >= max(naa.t$Age)) %>%
-            ##                           group_by(Time) %>%
-            ##                           dplyr::mutate(V1 = sum(V1)) %>%
-            ##                           filter(Age == max(naa.t$Age)))
-            ##     ggplot(naa_totn, aes(y = V1, x = Time)) +
-            ##         geom_line(linewidth = 1, alpha = .75) +
-            ##         geom_line(aes(y = numbers, x = Time), data = naa.t, color = "grey") +
-            ##         facet_wrap(. ~ as.factor(Ageclass), scales = "free_y", ncol = 2) +
-            ##         ylab("NAA") +
-            ##         theme_bw() +
-            ##         scale_x_continuous(breaks =
-            ##                                round(as.numeric(quantile(naa_totn$Time,
-            ##                                                          probs = seq(0, 1, .2))))) +
-            ##         guides(fill = guide_legend(override.aes = list(colour = NULL))) +
-            ##         theme(panel.background = element_blank(),
-            ##               legend.background = element_blank(),
-            ##               panel.grid.major = element_blank(),
-            ##               panel.grid.minor = element_blank(),
-            ##               panel.border = element_blank(),
-            ##               axis.line = element_line(linewidth = .2)) +
-            ##         xlab("Year")} else {
-            ##                         ggplot(naa_totn, aes(y = V1, x = Time)) +
-            ##                             geom_line(linewidth = 1, alpha = .75) +
-            ##                             facet_wrap(. ~ as.factor(Ageclass), scales = "free_y", ncol = 2) +
-            ##                             ylab("NAA") +
-            ##                             theme_bw() +
-            ##                             scale_x_continuous(breaks =
-            ##                                                    round(as.numeric(quantile(naa_totn$Time,
-            ##                                                                              probs = seq(0, 1, .2))))) +
-            ##                             guides(fill = guide_legend(override.aes = list(colour = NULL))) +
-            ##                             theme(panel.background = element_blank(),
-            ##                                   legend.background = element_blank(),
-            ##                                   panel.grid.major = element_blank(),
-            ##                                   panel.grid.minor = element_blank(),
-            ##                                   panel.border = element_blank(),
-            ##                                   axis.line = element_line(linewidth = .2)) +
-            ##                             xlab("Year")
-            ##                     }
-            ## })
 
             ## if(obj$naa %in% naa_totn$.id){
     ##         naa.t <- subset(obj$naa, .id %in% naa_ids)
@@ -1752,7 +1713,6 @@ vadt <- function(obj, outdir, anim = NULL) {
       # Total biomass map
       output$tot_map <-
           renderPlot({
-              obj$tot_bio <- obj$tot_bio[!is.na(names(obj$tot_bio))]
               bms.mis <- setdiff(names(obj$tot_bio), names(obj$bms))
               obj$bms[bms.mis] <- 0
               ggplot(aes(y = obj$tot_bio[[match(input$ssb_var, names(obj$tot_bio))]], x = Time), data = obj$tot_bio) +
@@ -1841,10 +1801,16 @@ vadt <- function(obj, outdir, anim = NULL) {
       # FISHERIES TAB
       # -----------------------------------------
       output$fish_all <- renderPlot({
+            tmp <-
+                obj$har %>%
+                group_by(Time, Group) %>%
+                dplyr::mutate(biomass = sum(biomass)) %>%
+                select(-Fishery) %>%
+                distinct()
         if (input$scale == "Free") {
             ggplot(aes(y = Biomass, x = Time), data = obj$fish_biomass_year_l) +
                 geom_line() +
-                geom_line(data = obj$har, aes(y = biomass, x = Time), color = "grey") +
+                geom_line(data = tmp, aes(y = biomass, x = Time), color = "grey") +
             facet_wrap(~Group, scales = "free", ncol = 5) +
             theme_bw() +
             xlab("Time") +
@@ -2081,7 +2047,7 @@ vadt <- function(obj, outdir, anim = NULL) {
               mutate(age = as.factor(Age))
         ggplot(data = tmp, aes(y = Discard_numb, x = Time, group = Age, color = Age)) +
           geom_line(linewidth = 2, alpha = .75) +
-            scale_color_viridis(discrete = FALSE) + # scale_color_brewer(name = "Ageclass", type = "div", palette = 5, labels = 1:max(obj$totalnums$Age)) +
+            scale_color_viridis(discrete = FALSE) + # scale_color_brewer(name = "Ageclass", type = "div", palette = 5, labels = 1:16) +
           ylab("Total discarded (numbers)") +
           theme_bw() +
           scale_x_continuous(breaks = round(as.numeric(quantile(tmp$Time, probs = seq(0, 1, .2))))) +
@@ -2097,7 +2063,7 @@ vadt <- function(obj, outdir, anim = NULL) {
               mutate(age = as.factor(Age))
         ggplot(data = tmp, aes(y = Discard_weight, x = Time, group = Age, color = Age)) +
           geom_line(linewidth = 2, alpha = .75) +
-          scale_color_viridis(discrete = FALSE) + # scale_color_brewer(name = "Ageclass", type = "div", palette = 5, labels = 1:max(obj$totalnums$Age)) +
+          scale_color_viridis(discrete = FALSE) + # scale_color_brewer(name = "Ageclass", type = "div", palette = 5, labels = 1:16) +
           ylab("Total discarded (tons)") +
           theme_bw() +
           scale_x_continuous(breaks = round(as.numeric(quantile(tmp$Time, probs = seq(0, 1, .2))))) +
