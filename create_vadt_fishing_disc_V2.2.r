@@ -1,4 +1,7 @@
-create_vadt <- function(outdir, funfile, biolprm, ncout, startyear, endyear, toutinc, fishing = FALSE, fishfile = NULL, toutfinc, bmsummaries, naasummaries, harsummaries, ssbmri){
+create_vadt <- function(outdir, funfile, biolprm, ncout, startyear, endyear, 
+                        toutinc, fishing = FALSE, fishfile = NULL, toutfinc, 
+                        bmsummaries, naasummaries, harsummaries, ssbmri, ntot,
+                        caa){
   # contants
   nsecs <- 86400
   ndays <- 365
@@ -49,6 +52,8 @@ create_vadt <- function(outdir, funfile, biolprm, ncout, startyear, endyear, tou
     har <- read.csv(harsummaries) %>%
         dplyr::filter(Time <= endyear + 1)
     ssbmri <- read.csv(ssbmri)
+    ntot <- read.csv(ntot)
+    caa <- read_csv(caa)
   rs_names <- str_trim(fun_group[fun_group$GroupType %in% c("FISH", "MAMMAL", "SHARK", "BIRD"), "Name"]) # trim white space
   rs_codes <- str_trim(fun_group[fun_group$GroupType %in% c("FISH", "MAMMAL", "SHARK", "BIRD"), "Code"])
   invert_names <- fun_group[!(fun_group$GroupType %in% c("FISH", "MAMMAL", "SHARK", "BIRD")), ]
@@ -646,7 +651,7 @@ create_vadt <- function(outdir, funfile, biolprm, ncout, startyear, endyear, tou
     colnames(fish_tsact_year) <- c("Time", fishedFish)
     colnames(fish_fishery) <- c("Time", "Fishery", fishedFish)
     fish_fishery_l <- gather(fish_fishery, "Group", "biomass", 3:ncol(fish_fishery))
-    fish_fishery_l$Time <- startyear + fish_fishery_l$Time / 365
+    fish_fishery_l$Time <- round(startyear - 1 + fish_fishery_l$Time / 365)
     fish_biomass_year_l <- gather(fish_biomass_year, "Group", "Biomass", 2:ncol(fish_biomass_year))
     fish_fishery_l$Fishery <- fish_groups$Name[match(fish_fishery_l$Fishery, fish_groups$Code)]
 
@@ -700,55 +705,86 @@ create_vadt <- function(outdir, funfile, biolprm, ncout, startyear, endyear, tou
     land_w_list <- list()
     land_num_list <- list()
     le_list <- list()
+    removalsBoxAge <- list()
+    removalsBoxAgeW <- list()
+
     for (i in 1:length(dis_names)) {
-      # Get numbers disarded
-      tempDis <- ncvar_get(nc = fish_out, varid = paste0(names_age[i], "_Discards"))
-      tempDis <- apply(tempDis, c(2), sum)
-      dis_num_list[[i]] <- tempDis
-      # Get numbers in stock
-      tempNums <- ncvar_get(nc = nc_out, varid = paste0(names_age[i], "_Nums"))
-      # Get weight for each ageclass
-      tempRN <- ncvar_get(nc = nc_out, varid = paste0(names_age[i], "_ResN"))
-      tempRN[tempNums <= 1e-16] <- NA
-      tempSN <- ncvar_get(nc = nc_out, varid = paste0(names_age[i], "_StructN"))
-      tempSN[tempNums <= 1e-16] <- NA
-      structN_2 <- apply(tempSN, c(3), mean, na.rm = TRUE)
-      reserveN_2 <- apply(tempRN, c(3), mean, na.rm = TRUE)
-      wgt_t <- (structN_2 + reserveN_2) * 5.7 * 20 / 1e+9
-      wgt_g <- (structN_2 + reserveN_2) * 5.7 * 20 / 1e+3
-      # Get length for ageclass
-      fg_group <- fun_group$Code[fishing_names[i] == fun_group$Name]
-      param_a <- ab_params$a[ab_params$a_name == paste0("li_a_", fg_group)]
-      param_b <- ab_params$b[ab_params$b_name == paste0("li_b_", fg_group)]
-      le_list[[i]] <- (wgt_g / param_a)^(1 / param_b)
+        ## Get numbers disarded
+        tempDis <- ncvar_get(nc = fish_out, varid = paste0(names_age[i], "_Discards"))
+        tempDis <- apply(tempDis, c(2), sum)
+        dis_num_list[[i]] <- tempDis
+        ## Get numbers in stock
+        tempNums <- ncvar_get(nc = nc_out, varid = paste0(names_age[i], "_Nums"))
+        ## Get weight for each ageclass
+        tempRN <- ncvar_get(nc = nc_out, varid = paste0(names_age[i], "_ResN"))
+        tempRN[tempNums <= 1e-16] <- NA
+        tempSN <- ncvar_get(nc = nc_out, varid = paste0(names_age[i], "_StructN"))
+        tempSN[tempNums <= 1e-16] <- NA
+        structN_2 <- apply(tempSN, c(3), mean, na.rm = TRUE)
+        reserveN_2 <- apply(tempRN, c(3), mean, na.rm = TRUE)
+        wgt_t <- (structN_2 + reserveN_2) * 5.7 * 20 / 1e+9
+        wgt_g <- (structN_2 + reserveN_2) * 5.7 * 20 / 1e+3
+        ## Get length for ageclass
+        fg_group <- fun_group$Code[fishing_names[i] == fun_group$Name]
+        param_a <- ab_params$a[ab_params$a_name == paste0("li_a_", fg_group)]
+        param_b <- ab_params$b[ab_params$b_name == paste0("li_b_", fg_group)]
+        le_list[[i]] <- (wgt_g / param_a)^(1 / param_b)
 
-      # Get catch
-      tempCat <- ncvar_get(nc = fish_out, varid = paste0(names_age[i], "_Catch"))
-      tempCat <- apply(tempCat, c(2), sum)
-      catch_num_list[[i]] <- tempCat + tempDis
+        ## Get catch
+        tempCat <- ncvar_get(nc = fish_out, varid = paste0(names_age[i], "_Catch"))
+        tempCat <- apply(tempCat, c(2), sum)
+        catch_num_list[[i]] <- tempCat + tempDis
 
-      # Get landings
-      land_num_list[[i]] <- tempCat
+        ## get removals per box per ageclass
+        tmplist <- NULL
+        tempCatR <- ncvar_get(nc = fish_out, varid = paste0(names_age[i], "_Catch"))
+        tempDisR <- ncvar_get(nc = fish_out, varid = paste0(names_age[i], "_Discards"))
+        tmplist <- list(tempCatR + tempDisR)
+        names(tmplist) <- names_age[i]
+        tmplistW <- list(tempCatR * wgt_t + tempDisR * wgt_t)
+        names(tmplistW) <- names_age[i]
+        removalsBoxAge <- c(removalsBoxAge, tmplist)
+        removalsBoxAgeW <- c(removalsBoxAgeW, tmplistW)
 
-      # Calculated disards, catch and landings in tonnes
-      if (toutfinc == toutinc & length(wgt_t) == length(tempDis)) {
-        dis_w_list[[i]] <- wgt_t * tempDis
-        catch_w_list[[i]] <- wgt_t * tempCat + wgt_t * tempDis
-        land_w_list[[i]] <- wgt_t * tempCat
-      } else {
-        dis_w_list <- NULL
-        catch_w_list <- NULL
-        land_w_list <- NULL
-      }
+                                        # Get landings
+        land_num_list[[i]] <- tempCat
+
+                                        ## Calculated discards, catch and landings in tonnes
+        if (toutfinc == toutinc & length(wgt_t) == length(tempDis)) {
+            dis_w_list[[i]]   <- wgt_t * tempDis
+            catch_w_list[[i]] <- wgt_t * tempCat + wgt_t * tempDis
+            land_w_list[[i]]  <- wgt_t * tempCat
+        } else {
+            dis_w_list <- NULL
+            catch_w_list <- NULL
+            land_w_list <- NULL
+        }
     }
+
+
+    rboxageoutW <- NULL
+    for(m in 1:length(removalsBoxAgeW)){
+        tmp <- as.data.frame(removalsBoxAgeW[[m]])
+        tmpname <- names(removalsBoxAgeW)[m]
+        tmp <- cbind(tmp, box = 0:52,
+                     age = as.numeric(gsub('[^0-9.-]', '', tmpname)),
+                     species = gsub('[[:digit:]]+', '', tmpname))
+        rboxageoutW <- rbind(rboxageoutW, tmp)
+    }
+    rboxageoutW <-
+        rboxageoutW %>%
+        pivot_longer(!c(box, age, species), values_to = 'Wremovals', names_to = 'Time') %>%
+      mutate(rep(startyear:(dim(rboxageoutW)[2] - 4 + startyear), dim(rboxageoutW)[1]))
+    
+
     names(dis_num_list) <- names_age
     names(catch_num_list) <- names_age
     names(land_num_list) <- names_age
     names(le_list) <- names_age
     if (toutfinc == toutinc & length(wgt_t) == length(tempDis)) {
-      names(land_w_list) <- names_age
-      names(catch_w_list) <- names_age
-      names(dis_w_list) <- names_age
+        names(land_w_list) <- names_age
+        names(catch_w_list) <- names_age
+        names(dis_w_list) <- names_age
     }
 
     max_time_f <- length(fish_out$dim$t$vals)
@@ -763,8 +799,8 @@ create_vadt <- function(outdir, funfile, biolprm, ncout, startyear, endyear, tou
 
     if (toutfinc == toutinc & length(wgt_t) == length(tempDis)) {
       dis_df$Discard_weight <- ldply(dis_w_list, data.frame)$"X..i.."
-      dis_df$Land_weight <- ldply(land_w_list, data.frame)$"X..i.."
-      dis_df$Catch_weight <- ldply(catch_w_list, data.frame)$"X..i.."
+      dis_df$Land_weight    <- ldply(land_w_list, data.frame)$"X..i.."
+      dis_df$Catch_weight   <- ldply(catch_w_list, data.frame)$"X..i.."
       dis_df$Length <- ldply(le_list, data.frame)$"X..i.."
     }
     if (is.null(dis_w_list)) {
@@ -785,7 +821,34 @@ create_vadt <- function(outdir, funfile, biolprm, ncout, startyear, endyear, tou
 
 
 
-    output <- list(disagg = vars, invert_vars = invert_vars, invert_mnames = invert_mnames, trace_vars = trace_vars, trace_names = trace_names, var_names = tot_num, N_names = N, max_layers = max_layers, max_time = max_time, bioagg_names = bioagg_names, rs_names = rs_names, ssb_names = ssb_names, yoy_names = yoy_names, islands = islands, rel_bio = rel_bio, tot_bio = tot_bio, ssb = ssb, yoy = yoy, structN = structN, reserveN = reserveN, totalnums = totalnums, map_base = map_base, numboxes = numboxes, fun_group = fun_group, invert_names = invert_names, invert_l = invert_l, vert_l = vert_l, ab_params = ab_params, diet_l = diet_l, tot_pred = tot_pred, erla_plots = erla_plots, toutinc = toutinc, startyear = startyear, tot_bio_v = tot_bio_v, tot_bio_i = tot_bio_i, biomass_by_box = biomass_by_box, fgnames = fun_group[, 4], fish_fishery_l = fish_fishery_l, fish_biomass_year = fish_biomass_year, fishedFish = fishedFish, dens = dens, dens_km2 = dens_km2, dens_km3 = dens_km3, yoy_nums = yoy_nums, totcatch = totcatch_df_l, fish_biomass_year_l = fish_biomass_year_l, effort_l = effort_l, dis_df = dis_df, discard_total_l = discard_total_l, discard_fishery_l = discard_fishery_l, pR_parms = pR_parms, bms = bms, naa = naa, naasp = naasp, har = har, ssbmri = ssbmri)
+    output <- list(disagg = vars, invert_vars = invert_vars, 
+                   invert_mnames = invert_mnames, trace_vars = trace_vars, 
+                   trace_names = trace_names, var_names = tot_num, N_names = N, 
+                   max_layers = max_layers, max_time = max_time, 
+                   bioagg_names = bioagg_names, rs_names = rs_names, 
+                   ssb_names = ssb_names, yoy_names = yoy_names, 
+                   islands = islands, rel_bio = rel_bio, tot_bio = tot_bio, 
+                   ssb = ssb, yoy = yoy, structN = structN, reserveN = reserveN, 
+                   totalnums = totalnums, map_base = map_base, numboxes = numboxes, 
+                   fun_group = fun_group, invert_names = invert_names, 
+                   invert_l = invert_l, vert_l = vert_l, ab_params = ab_params, 
+                   diet_l = diet_l, tot_pred = tot_pred, erla_plots = erla_plots, 
+                   toutinc = toutinc, startyear = startyear, endyear = endyear, 
+                   tot_bio_v = tot_bio_v, tot_bio_i = tot_bio_i, 
+                   biomass_by_box = biomass_by_box, fgnames = fun_group[, 4], 
+                   fish_fishery_l = fish_fishery_l, 
+                   fish_biomass_year = fish_biomass_year, 
+                   fishedFish = fishedFish, dens = dens, dens_km2 = dens_km2, 
+                   dens_km3 = dens_km3, yoy_nums = yoy_nums, 
+                   totcatch = totcatch_df_l, 
+                   fish_biomass_year_l = fish_biomass_year_l, 
+                   effort_l = effort_l, dis_df = dis_df, 
+                   discard_total_l = discard_total_l, 
+                   discard_fishery_l = discard_fishery_l, pR_parms = pR_parms, 
+                   bms = bms, naa = naa, naasp = naasp, har = har, 
+                   ssbmri = ssbmri, removalsBoxAge = removalsBoxAge, 
+                   rboxageoutW = rboxageoutW, ntot = ntot, caa = caa,
+                   removalsBoxAgeW = removalsBoxAgeW)
 
   cat("### ------------ vat object created, you can now run the vat application ------------ ###\n")
   return(output)
