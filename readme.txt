@@ -12,6 +12,6 @@ At present, `vat` is able to:
 - Biological summary data.
 - Fishing by species and fishery over time.
 - Reference plots for Biomass, SSB, NAA (numbers at age), and harvest for user defined groups from observed estimates can be displayed by using the files in the observation templates directory. The reference lines are displayed in light grey.
-
+-ForVADT are Iceland-specific reference indicies
 
 To start the application, click
