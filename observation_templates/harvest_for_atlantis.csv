@@ -72,7 +72,6 @@ Time,Fishery,Group,biomass,source
 2018,bottom trawl,Cod,266901,MRI
 2019,bottom trawl,Cod,262650,MRI
 2020,bottom trawl,Cod,269581,MRI
-2021,bottom trawl,Cod,265451,MRI
 1948,longline,Haddock,51905,MRI
 1949,longline,Haddock,66537,MRI
 1950,longline,Haddock,60373,MRI
@@ -146,7 +145,6 @@ Time,Fishery,Group,biomass,source
 2018,longline,Haddock,48865,MRI
 2019,longline,Haddock,58044,MRI
 2020,longline,Haddock,54781,MRI
-2021,longline,Haddock,57597,MRI
 1948,bottom trawl,Saithe,108740,MRI
 1949,bottom trawl,Saithe,84755,MRI
 1950,bottom trawl,Saithe,53150,MRI
@@ -220,7 +218,6 @@ Time,Fishery,Group,biomass,source
 2018,bottom trawl,Saithe,66249,MRI
 2019,bottom trawl,Saithe,64532,MRI
 2020,bottom trawl,Saithe,50253,MRI
-2021,bottom trawl,Saithe,59770,MRI
 1948,bottom trawl,Redfish,68120.40336,MRI
 1949,bottom trawl,Redfish,95296.40336,MRI
 1950,bottom trawl,Redfish,126361.1176,MRI
