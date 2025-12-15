@@ -837,7 +837,7 @@ vadt <- function(obj, outdir, anim = NULL) {
               if (is.null(obj$fish_fishery_l) == FALSE) {
                 selectInput("FishedGroups",
                   label = "Functional Group",
-                  choices = unique(obj$totcatch$.id)
+                  choices = unique(obj$totcatch$Group)
                 )
               }
             )
@@ -1859,8 +1859,11 @@ vadt <- function(obj, outdir, anim = NULL) {
 
         # Harvest biomass
         output$harvest <- renderPlot({
+            req(input$ssb_var)
+            req(input$ssb_var %in% names(obj$fish_biomass_year))
+
             landings <- obj$fish_biomass_year %>%
-                select(Time, Landings = all_of(input$ssb_var))
+                select(Time, Landings = all_of(input$ssb_var))  # Use NAME directly
 
             har_summary <- obj$har %>%
                 filter(Group == input$ssb_var) %>%
@@ -1875,15 +1878,25 @@ vadt <- function(obj, outdir, anim = NULL) {
 
         # Total biomass map
         output$tot_map <- renderPlot({
+            req(input$ssb_var)
+
+            # Convert species name to code
+            species_code <- obj$fun_group %>%
+                filter(Name == input$ssb_var) %>%
+                pull(Code)
+
+            req(length(species_code) > 0)
+            req(species_code %in% names(obj$tot_bio))
+
             # Add missing columns with zeros
             bms_missing <- setdiff(names(obj$tot_bio), names(obj$bms))
             obj$bms[bms_missing[!is.na(bms_missing)]] <- 0
 
             model_data <- obj$tot_bio %>%
-                select(Time, value = all_of(input$ssb_var))
+                select(Time, value = all_of(species_code))  # Use code instead
 
             comparison_data <- obj$bms %>%
-                select(Time, value = all_of(input$ssb_var))
+                select(Time, value = all_of(input$ssb_var))  # This one uses name
 
             plot_timeseries(model_data, y_var = "value", title = "Total Biomass",
                             comparison_data = comparison_data, comparison_y = "value",
@@ -1893,8 +1906,11 @@ vadt <- function(obj, outdir, anim = NULL) {
 
         # SSB map
         output$ssb_map <- renderPlot({
+            req(input$ssb_var)
+            req(input$ssb_var %in% names(obj$ssb))
+
             tmp <- obj$ssb %>%
-                select(Time, Group = all_of(input$ssb_var)) %>%
+                select(Time, Group = all_of(input$ssb_var)) |>
                 filter(Time >= first(Time) + 1)
 
             # Add missing columns with zeros
@@ -2013,245 +2029,285 @@ vadt <- function(obj, outdir, anim = NULL) {
         # FISHERIES TAB
         # -----------------------------------------
 
-      output$fish_all <- renderPlot({
-        tmp <-
-          obj$har %>%
-          group_by(Time, Group) %>%
-          dplyr::mutate(biomass = sum(biomass)) %>%
-          select(-Fishery) %>%
-          distinct()
+      #   output$fish_all <- renderPlot({
+      #   tmp <-
+      #     obj$har %>%
+      #     group_by(Time, Group) %>%
+      #     dplyr::mutate(biomass = sum(biomass)) %>%
+      #     select(-Fishery) %>%
+      #     distinct()
 
-        if (input$scale == "Free") {
-          ggplot(data = obj$fish_biomass_year_l[obj$fish_biomass_year_l$Biomass > 0, ],
-                 aes(y = Biomass, x = Time)) +
-            geom_line() +
-            geom_line(data = tmp, aes(y = biomass, x = Time), color = "grey") +
-            scale_x_continuous(breaks = round(as.numeric(quantile(obj$fish_biomass_year_l$Time, probs = seq(0, 1, .1))))) +
-            facet_wrap(~Group, scales = "free", ncol = 5) +
-            theme_bw() +
-            xlab("Time") +
-            ylab("Landings (tons)")
-        } else {
-          ggplot(data = obj$fish_biomass_year_l[obj$fish_biomass_year_l$Biomass > 0, ],
-                 aes(y = Biomass, x = Time)) +
-            geom_line() +
-            geom_line(data = tmp, aes(y = biomass, x = Time), color = "grey") +
-            scale_x_continuous(breaks = round(as.numeric(quantile(obj$fish_biomass_year_l$Time,
-                                                                  probs = seq(0, 1, .1))))) +
-            facet_wrap(~Group, ncol = 5) +
-            theme_bw() +
-            xlab("Time") +
-            ylab("Landings (tons)")
-        }
-      })
-
-
+      #   if (input$scale == "Free") {
+      #     ggplot(data = obj$fish_biomass_year_l[obj$fish_biomass_year_l$Biomass > 0, ],
+      #            aes(y = Biomass, x = Time)) +
+      #       geom_line() +
+      #       geom_line(data = tmp, aes(y = biomass, x = Time), color = "grey") +
+      #       scale_x_continuous(breaks = round(as.numeric(quantile(obj$fish_biomass_year_l$Time, probs = seq(0, 1, .1))))) +
+      #       facet_wrap(~Group, scales = "free", ncol = 5) +
+      #       theme_bw() +
+      #       xlab("Time") +
+      #       ylab("Landings (tons)")
+      #   } else {
+      #     ggplot(data = obj$fish_biomass_year_l[obj$fish_biomass_year_l$Biomass > 0, ],
+      #            aes(y = Biomass, x = Time)) +
+      #       geom_line() +
+      #       geom_line(data = tmp, aes(y = biomass, x = Time), color = "grey") +
+      #       scale_x_continuous(breaks = round(as.numeric(quantile(obj$fish_biomass_year_l$Time,
+      #                                                             probs = seq(0, 1, .1))))) +
+      #       facet_wrap(~Group, ncol = 5) +
+      #       theme_bw() +
+      #       xlab("Time") +
+      #       ylab("Landings (tons)")
+      #   }
+      # })
 
 
-      output$fish_marginal_map <- renderPlot({
-        ofby <-
-          tibble(obj$fish_biomass_year) %>%
-          mutate(Time = Time-1) %>%
-          filter(Time >= obj$startyear)
-        ggplot(aes(y = ofby[[match(input$fish_marginal,
-                                                    names(ofby))]], x = Time),
-               data = ofby) +
-          geom_line() +
-          scale_x_continuous(breaks = round(as.numeric(quantile(ofby$Time, probs = seq(0, 1, .1))))) +theme_bw() +
-          ylab("Landings (tons)") +
-          xlab("Year")
-      })
+
+
+      #   output$fish_marginal_map <- renderPlot({
+      #   ofby <-
+      #     tibble(obj$fish_biomass_year) %>%
+      #     mutate(Time = Time-1) %>%
+      #     filter(Time >= obj$startyear)
+      #   ggplot(aes(y = ofby[[match(input$fish_marginal,
+      #                                               names(ofby))]], x = Time),
+      #          data = ofby) +
+      #     geom_line() +
+      #     scale_x_continuous(breaks = round(as.numeric(quantile(ofby$Time, probs = seq(0, 1, .1))))) +theme_bw() +
+      #     ylab("Landings (tons)") +
+      #     xlab("Year")
+      # })
 
       # Catch by ageclass
 
-      output$fish_by_age_n <- renderPlot({
-          tmp <-
-        left_join(
-            as_tibble(obj$dis_df[obj$dis_df$Functional_Group == input$fish_age_n, ]) %>%
-              mutate(Age = as.factor(Age)) %>%
-              select(Time, Functional_Group, Age, Land_numb) %>%
-          mutate(Time = Time-1) %>% ##JMK bug
-          filter(Time >= obj$startyear),
-            as_tibble(obj$caa) %>%
-              filter(species == input$fish_age_n) %>%
-              dplyr::rename(obscaa = catch) %>%
-              dplyr::rename(Functional_Group = species) %>%
-              mutate(Age = as.factor(Age))
-        )
+      #   output$fish_by_age_n <- renderPlot({
+      #     tmp <-
+      #   left_join(
+      #       as_tibble(obj$dis_df[obj$dis_df$Functional_Group == input$fish_age_n, ]) %>%
+      #         mutate(Age = as.factor(Age)) %>%
+      #         select(Time, Functional_Group, Age, Land_numb) %>%
+      #     mutate(Time = Time-1) %>% ##JMK bug
+      #     filter(Time >= obj$startyear),
+      #       as_tibble(obj$caa) %>%
+      #         filter(species == input$fish_age_n) %>%
+      #         dplyr::rename(obscaa = catch) %>%
+      #         dplyr::rename(Functional_Group = species) %>%
+      #         mutate(Age = as.factor(Age))
+      #   )
 
-        ggplot(data = tmp, aes(y = Land_numb, x = Time)) +
-          geom_line(linewidth = 1, alpha = .75) +
-          geom_line(aes(y = obscaa, x = Time), col = "grey") +
-          facet_wrap(. ~ Age, ncol = 5, scales = "free_y") +
-          scale_color_viridis(discrete = TRUE) +
-          ylab("Landings (numbers)") +
-          theme_bw() +
-          scale_x_continuous(breaks = round(as.numeric(quantile(tmp$Time, probs = seq(0, 1, .2))))) +
-          guides(fill = guide_legend(override.aes = list(colour = NULL))) +
-          theme(
-            panel.background = element_blank(),
-            legend.background = element_blank(),
-            panel.border = element_blank(),
-            axis.line = element_line(linewidth = .2)
-          ) +
-          xlab("Year")
-      })
+      #   ggplot(data = tmp, aes(y = Land_numb, x = Time)) +
+      #     geom_line(linewidth = 1, alpha = .75) +
+      #     geom_line(aes(y = obscaa, x = Time), col = "grey") +
+      #     facet_wrap(. ~ Age, ncol = 5, scales = "free_y") +
+      #     scale_color_viridis(discrete = TRUE) +
+      #     ylab("Landings (numbers)") +
+      #     theme_bw() +
+      #     scale_x_continuous(breaks = round(as.numeric(quantile(tmp$Time, probs = seq(0, 1, .2))))) +
+      #     guides(fill = guide_legend(override.aes = list(colour = NULL))) +
+      #     theme(
+      #       panel.background = element_blank(),
+      #       legend.background = element_blank(),
+      #       panel.border = element_blank(),
+      #       axis.line = element_line(linewidth = .2)
+      #     ) +
+      #     xlab("Year")
+      # })
 
-     output$fish_by_age_w <- renderPlot({
-        tmp <- obj$dis_df[obj$dis_df$Functional_Group == input$fish_age, ] %>%
-          mutate(Time = Time-1) %>%
-          filter(Time >= obj$startyear) %>%
-          mutate(Age = as.factor(Age))
+      #   output$fish_by_age_w <- renderPlot({
+      #   tmp <- obj$dis_df[obj$dis_df$Functional_Group == input$fish_age, ] %>%
+      #     mutate(Time = Time-1) %>%
+      #     filter(Time >= obj$startyear) %>%
+      #     mutate(Age = as.factor(Age))
 
-        ggplot(data = tmp, aes(y = Land_weight, x = Time)) +
-          geom_line(linewidth = 1, alpha = .75) +
-          facet_wrap(. ~ Age, ncol = 5, scales = "free_y") +
-          scale_color_viridis(discrete = TRUE) +
-          ylab("Landings (Tons)") +
-          theme_bw() +
-          scale_x_continuous(breaks = round(as.numeric(quantile(tmp$Time, probs = seq(0, 1, .2))))) +
-          guides(fill = guide_legend(override.aes = list(colour = NULL))) +
-          theme(
-            panel.background = element_blank(),
-            legend.background = element_blank(),
-            panel.border = element_blank(),
-            axis.line = element_line(linewidth = .2)
-          )  +
-          xlab("Year")
-      })
+      #   ggplot(data = tmp, aes(y = Land_weight, x = Time)) +
+      #     geom_line(linewidth = 1, alpha = .75) +
+      #     facet_wrap(. ~ Age, ncol = 5, scales = "free_y") +
+      #     scale_color_viridis(discrete = TRUE) +
+      #     ylab("Landings (Tons)") +
+      #     theme_bw() +
+      #     scale_x_continuous(breaks = round(as.numeric(quantile(tmp$Time, probs = seq(0, 1, .2))))) +
+      #     guides(fill = guide_legend(override.aes = list(colour = NULL))) +
+      #     theme(
+      #       panel.background = element_blank(),
+      #       legend.background = element_blank(),
+      #       panel.border = element_blank(),
+      #       axis.line = element_line(linewidth = .2)
+      #     )  +
+      #     xlab("Year")
+      # })
 
-      ## removals by age and box W
-      output$fish_by_age_w_box <- renderPlot({
-        tmp <-
-          obj$rboxageoutW[obj$rboxageoutW$species == input$fish_species_box &
-            obj$rboxageoutW$age == input$fish_age_box, ]
+      # #
+        ## removals by age and box W
+      # output$fish_by_age_w_box <- renderPlot({
+      #   tmp <-
+      #     obj$rboxageoutW[obj$rboxageoutW$species == input$fish_species_box &
+      #       obj$rboxageoutW$age == input$fish_age_box, ]
 
-          ggplot(tmp) +
-          geom_line(aes(x = Time, y = Wremovals)) +
-          facet_wrap(~box) +
-          theme_bw() +
-          ylab("Landings (Tons)") +
-          guides(fill = guide_legend(override.aes = list(colour = NULL))) +
-          theme(
-            panel.background = element_blank(),
-            legend.background = element_blank(),
-            panel.grid.major = element_blank(),
-            panel.grid.minor = element_blank(),
-            panel.border = element_blank(),
-            axis.line = element_line(linewidth = .2)
-          ) +
-          xlab("Year")
-      })
+      #     ggplot(tmp) +
+      #     geom_line(aes(x = Time, y = Wremovals)) +
+      #     facet_wrap(~box) +
+      #     theme_bw() +
+      #     ylab("Landings (Tons)") +
+      #     guides(fill = guide_legend(override.aes = list(colour = NULL))) +
+      #     theme(
+      #       panel.background = element_blank(),
+      #       legend.background = element_blank(),
+      #       panel.grid.major = element_blank(),
+      #       panel.grid.minor = element_blank(),
+      #       panel.border = element_blank(),
+      #       axis.line = element_line(linewidth = .2)
+      #     ) +
+      #     xlab("Year")
+      # })
 
-      output$catch_w <- renderPlot({
-        tmp <- left_join(
-          as_tibble(obj$dis_df[obj$dis_df$Functional_Group == input$fish_species, ]) %>%
-            mutate(Age = as.factor(Age)) %>%
-            mutate(Time = Time-1) %>%
-            filter(Time >= obj$startyear) %>%
-            select(Time, Functional_Group, Age, Catch_weight),
-          as_tibble(obj$caa) %>%
-            filter(species == input$fish_species) %>%
-            dplyr::rename(bmaa = biomassaa) %>%
-            dplyr::rename(Functional_Group = species) %>%
-            mutate(Age = as.factor(Age))
-        )
-        ggplot(data = tmp, aes(y = Catch_weight, x = Time)) +
-          geom_line(linewidth = 1, alpha = .75) +
-          geom_line(aes(y = bmaa, x = Time), col = "grey") +
-          facet_wrap(. ~ Age, ncol = 5) + # , scales = "free_y") +
-          scale_color_viridis(discrete = TRUE) +
-          ylab("Catch (harvest + discards) (Tons)") +
-          theme_bw() +
-          scale_x_continuous(breaks = round(as.numeric(quantile(tmp$Time, probs = seq(0, 1, .2))))) +
-          guides(fill = guide_legend(override.aes = list(colour = NULL))) +
-          theme(
-            panel.background = element_blank(),
-            legend.background = element_blank(),
-            panel.border = element_blank(),
-            axis.line = element_line(linewidth = .2)
-          )  +
-          xlab("Year")
-      })
+      # output$catch_w <- renderPlot({
+      #   tmp <- left_join(
+      #     as_tibble(obj$dis_df[obj$dis_df$Functional_Group == input$fish_species, ]) %>%
+      #       mutate(Age = as.factor(Age)) %>%
+      #       mutate(Time = Time-1) %>%
+      #       filter(Time >= obj$startyear) %>%
+      #       select(Time, Functional_Group, Age, Catch_weight),
+      #     as_tibble(obj$caa) %>%
+      #       filter(species == input$fish_species) %>%
+      #       dplyr::rename(bmaa = biomassaa) %>%
+      #       dplyr::rename(Functional_Group = species) %>%
+      #       mutate(Age = as.factor(Age))
+      #   )
+      #   ggplot(data = tmp, aes(y = Catch_weight, x = Time)) +
+      #     geom_line(linewidth = 1, alpha = .75) +
+      #     geom_line(aes(y = bmaa, x = Time), col = "grey") +
+      #     facet_wrap(. ~ Age, ncol = 5) + # , scales = "free_y") +
+      #     scale_color_viridis(discrete = TRUE) +
+      #     ylab("Catch (harvest + discards) (Tons)") +
+      #     theme_bw() +
+      #     scale_x_continuous(breaks = round(as.numeric(quantile(tmp$Time, probs = seq(0, 1, .2))))) +
+      #     guides(fill = guide_legend(override.aes = list(colour = NULL))) +
+      #     theme(
+      #       panel.background = element_blank(),
+      #       legend.background = element_blank(),
+      #       panel.border = element_blank(),
+      #       axis.line = element_line(linewidth = .2)
+      #     )  +
+      #     xlab("Year")
+      # })
 
-      output$catch_wf <- renderPlot({
-        tmp <- left_join(
-          as_tibble(obj$dis_df[obj$dis_df$Functional_Group == input$fish_speciesf, ]) %>%
-            mutate(Age = as.factor(Age))  %>%
-            mutate(Time = Time-1) %>%
-            filter(Time >= obj$startyear) %>%
-            select(Time, Functional_Group, Age, Catch_weight),
-          as_tibble(obj$caa) %>%
-            filter(species == input$fish_speciesf) %>%
-            dplyr::rename(bmaa = biomassaa) %>%
-            dplyr::rename(Functional_Group = species) %>%
-            mutate(Age = as.factor(Age))
-        )
-        ggplot(data = tmp, aes(y = Catch_weight, x = Time)) +
-          geom_line(linewidth = 1, alpha = .75) +
-          geom_line(aes(y = bmaa, x = Time), col = "grey") +
-          facet_wrap(. ~ Age, ncol = 5, scales = "free_y") +
-          scale_color_viridis(discrete = TRUE) +
-          ylab("Catch (harvest + discards) (Tons)") +
-          theme_bw() +
-          scale_x_continuous(breaks = round(as.numeric(quantile(tmp$Time, probs = seq(0, 1, .2))))) +
-          guides(fill = guide_legend(override.aes = list(colour = NULL))) +
-          theme(
-            panel.background = element_blank(),
-            legend.background = element_blank(),
-            panel.border = element_blank(),
-            axis.line = element_line(linewidth = .2)
-          ) +
-          xlab("Year")
-      })
+      # output$catch_wf <- renderPlot({
+      #   tmp <- left_join(
+      #     as_tibble(obj$dis_df[obj$dis_df$Functional_Group == input$fish_speciesf, ]) %>%
+      #       mutate(Age = as.factor(Age))  %>%
+      #       mutate(Time = Time-1) %>%
+      #       filter(Time >= obj$startyear) %>%
+      #       select(Time, Functional_Group, Age, Catch_weight),
+      #     as_tibble(obj$caa) %>%
+      #       filter(species == input$fish_speciesf) %>%
+      #       dplyr::rename(bmaa = biomassaa) %>%
+      #       dplyr::rename(Functional_Group = species) %>%
+      #       mutate(Age = as.factor(Age))
+      #   )
+      #   ggplot(data = tmp, aes(y = Catch_weight, x = Time)) +
+      #     geom_line(linewidth = 1, alpha = .75) +
+      #     geom_line(aes(y = bmaa, x = Time), col = "grey") +
+      #     facet_wrap(. ~ Age, ncol = 5, scales = "free_y") +
+      #     scale_color_viridis(discrete = TRUE) +
+      #     ylab("Catch (harvest + discards) (Tons)") +
+      #     theme_bw() +
+      #     scale_x_continuous(breaks = round(as.numeric(quantile(tmp$Time, probs = seq(0, 1, .2))))) +
+      #     guides(fill = guide_legend(override.aes = list(colour = NULL))) +
+      #     theme(
+      #       panel.background = element_blank(),
+      #       legend.background = element_blank(),
+      #       panel.border = element_blank(),
+      #       axis.line = element_line(linewidth = .2)
+      #     ) +
+      #     xlab("Year")
+      # })
 
-      output$catch_n <- renderPlot({
-        tmp <-
-          as_tibble(obj$dis_df[obj$dis_df$Functional_Group == input$fish_speciesn, ]) %>%
-          mutate(Age = Age)  %>%
-          mutate(Time = Time-1) %>%
-          filter(Time >= obj$startyear) %>%
-          select(Time, Functional_Group, Age, Catch_numb)
-        tmpobs <-
-          as_tibble(obj$caa) %>%
-          filter(species == input$fish_speciesn) %>%
-          dplyr::rename(obscaa = catch) %>%
-          dplyr::rename(Functional_Group = species) %>%
-          mutate(Age = Age) %>%
-          filter(Time <= obj$endyear)
-        tmp <-
-          full_join(
-            bind_rows(
-              tmp %>%
-                filter(Age < max(tmpobs$Age)),
-              tmp %>%
-                filter(Age >= max(tmpobs$Age)) %>%
-                group_by(Time) %>%
-                dplyr::mutate(Catch_numb = sum(Catch_numb)) %>%
-                filter(Age == max(tmpobs$Age))
-            ) %>%
-              arrange(Time, Age),
-            tmpobs
-          ) %>%
-          replace(is.na(.), 0)
+      #   output$catch_n <- renderPlot({
+      #       tmp <- obj$dis_df %>%
+      #           filter(Functional_Group == input$fish_speciesn) %>%
+      #           mutate(
+      #               Age = as.numeric(Age),  # Force numeric
+      #               Time = Time - 1
+      #           ) %>%
+      #           filter(Time >= obj$startyear) %>%
+      #           select(Time, Functional_Group, Age, Catch_numb)
 
-        ggplot(data = tmp, aes(y = Catch_numb, x = Time)) +
-          geom_line(linewidth = 1, alpha = .75) +
-          geom_line(aes(y = obscaa, x = Time), col = "grey") +
-          facet_wrap(. ~ Age, ncol = 5, scales = "free_y") +
-          scale_color_viridis(discrete = TRUE) +
-          ylab("Catch (harvest + discards) (N)") +
-          theme_bw() +
-          scale_x_continuous(breaks = round(as.numeric(quantile(tmp$Time, probs = seq(0, 1, .2))))) +
-          guides(fill = guide_legend(override.aes = list(colour = NULL))) +
-          theme(
-            panel.background = element_blank(),
-            legend.background = element_blank(),
-            panel.border = element_blank(),
-            axis.line = element_line(linewidth = .2)
-          ) +
-          xlab("Year")
-      })
+      #       tmpobs <- obj$caa %>%
+      #           filter(species == input$fish_speciesn, Time <= obj$endyear) %>%
+      #           rename(
+      #               obscaa = catch,
+      #               Functional_Group = species
+      #           ) %>%
+      #           mutate(Age = as.numeric(Age))  # Force numeric
+
+      #       # Check if we have observations
+      #       if (nrow(tmpobs) == 0) {
+      #           tmp <- tmp %>% mutate(Age = as.factor(Age))
+
+      #           ggplot(data = tmp, aes(y = Catch_numb, x = Time)) +
+      #               geom_line(linewidth = 1, alpha = .75) +
+      #               facet_wrap(. ~ Age, ncol = 5, scales = "free_y") +
+      #               scale_color_viridis(discrete = TRUE) +
+      #               ylab("Catch (harvest + discards) (N)") +
+      #               theme_bw() +
+      #               scale_x_continuous(breaks = round(as.numeric(quantile(tmp$Time, probs = seq(0, 1, .2))))) +
+      #               guides(fill = guide_legend(override.aes = list(colour = NULL))) +
+      #               theme(
+      #                   panel.background = element_blank(),
+      #                   legend.background = element_blank(),
+      #                   panel.border = element_blank(),
+      #                   axis.line = element_line(linewidth = .2)
+      #               ) +
+      #               xlab("Year")
+
+      #       } else {
+      #           max_obs_age <- max(tmpobs$Age, na.rm = TRUE)
+
+      #           # Aggregate ages - keep everything numeric
+      #           tmp_agg <- bind_rows(
+      #               tmp %>% filter(Age < max_obs_age),
+      #               tmp %>%
+      #               filter(Age >= max_obs_age) %>%
+      #               group_by(Time, Functional_Group) %>%
+      #               summarise(
+      #                   Catch_numb = sum(Catch_numb, na.rm = TRUE),
+      #                   Age = as.numeric(max_obs_age),  # Force numeric
+      #                   .groups = "drop"
+      #               )
+      #           ) %>%
+      #               arrange(Time, Age)
+
+      #           # Join with observations
+      #           tmp_final <- full_join(
+      #               tmp_agg,
+      #               tmpobs,
+      #               by = c("Time" = "Time", "Age" = "Age", "Functional_Group" = "Functional_Group")
+      #           ) %>%
+      #               mutate(
+      #                   Catch_numb = if_else(is.na(Catch_numb), 0, Catch_numb),
+      #                   obscaa = if_else(is.na(obscaa), 0, obscaa),
+      #                   Age = as.factor(Age)  # Only convert to factor at the very end
+      #               )
+
+      #           ggplot(data = tmp_final, aes(y = Catch_numb, x = Time)) +
+      #               geom_line(linewidth = 1, alpha = .75) +
+      #               geom_line(aes(y = obscaa, x = Time), col = "grey") +
+      #               facet_wrap(. ~ Age, ncol = 5, scales = "free_y") +
+      #               scale_color_viridis(discrete = TRUE) +
+      #               ylab("Catch (harvest + discards) (N)") +
+      #               theme_bw() +
+      #               scale_x_continuous(breaks = round(as.numeric(quantile(tmp_final$Time, probs = seq(0, 1, .2))))) +
+      #               guides(fill = guide_legend(override.aes = list(colour = NULL))) +
+      #               theme(
+      #                   panel.background = element_blank(),
+      #                   legend.background = element_blank(),
+      #                   panel.border = element_blank(),
+      #                   axis.line = element_line(linewidth = .2)
+      #               ) +
+      #               xlab("Year")
+      #       }
+      #   })
+
 
       # Catch by Fishery
 
@@ -2513,7 +2569,8 @@ vadt <- function(obj, outdir, anim = NULL) {
         # Catch (numbers) by age
         output$catch_n <- renderPlot({
             tmp <- prepare_fish_data(obj$dis_df, "Functional_Group", input$fish_speciesn) %>%
-                select(Time, Functional_Group, Age, Catch_numb)
+                select(Time, Functional_Group, Age, Catch_numb) |>
+                mutate(Age = as.double(Age))
 
             tmpobs <- obj$caa %>%
                 filter(species == input$fish_speciesn, Time <= obj$endyear) %>%
@@ -2563,7 +2620,7 @@ vadt <- function(obj, outdir, anim = NULL) {
         # Catch by box
         output$Catch_box <- renderPlot({
             tmp <- obj$totcatch %>%
-                filter(.id == input$FishedGroups) %>%
+                filter(Group == input$FishedGroups) %>%
                 mutate(Box = factor(Box, levels = unique(Box)[order(as.numeric(str_remove(unique(Box), "Box ")))]))
 
             ggplot(tmp, aes(y = Catch, x = Time)) +
