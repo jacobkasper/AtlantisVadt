@@ -95,7 +95,7 @@ create_vadt <- function(outdir, funfile, fishfile = NULL,
     # ==============================================================================
 
     # Load functional groups (only turned on groups)
-    grp <- read.csv(dir.grps.csv) %>%
+    grp <- read_csv(dir.grps.csv) %>%
         filter(IsTurnedOn == 1)
 
     # Load box geometry
@@ -119,7 +119,16 @@ create_vadt <- function(outdir, funfile, fishfile = NULL,
     results <- unique_codes %>%
         set_names() %>%
         map(~{
-            age.grp.sub <- age.grp %>% filter(Code == .x)
+            age.grp.sub <- age.grp %>%
+                filter(Code == .x) %>%
+                as.data.frame()  # Ensure it's a data.frame, not tibble
+
+            # Debug: check for NA values
+            if (any(is.na(age.grp.sub$NumCohorts))) {
+                warning(paste("NA NumCohorts for", .x))
+                return(NULL)
+            }
+
             bio.age(
                 age.grp = age.grp.sub,
                 nc.out = nc.out,
@@ -128,7 +137,8 @@ create_vadt <- function(outdir, funfile, fishfile = NULL,
                 flag.return.whole.system.biomass = TRUE,
                 path.bio.prm = dir.bio.prm
             )
-        })
+        }) %>%
+        compact()  # Remove NULL results
 
     # Combine SSB results
     ssbholly <- results %>%
@@ -966,7 +976,19 @@ create_vadt <- function(outdir, funfile, fishfile = NULL,
         # Read in Data
         fish_groups <- read_csv(paste0(outdir, fishfile), show_col_types = FALSE)
         fish_total <- read_table(paste0(outdir, ncout, "Catch.txt"), show_col_types = FALSE)
-        fish_fishery <- read_table(paste0(outdir, ncout, "CatchPerFishery.txt"), show_col_types = FALSE)
+        fish_fishery <- read_table(paste0(outdir, ncout, "CatchPerFishery.txt"),
+                                   show_col_types = FALSE)
+
+        if (nrow(fish_fishery) == 0) {
+            # Set correct types: Time = numeric, Fishery = character, rest = numeric
+            fish_fishery <- fish_fishery %>%
+                mutate(
+                    Time = as.numeric(Time),
+                    across(-c(Time, Fishery), as.numeric)
+                ) %>%
+                add_row(Time = endyear - startyear, Fishery = "none") %>%
+                mutate(across(-c(Time, Fishery), ~replace_na(., 0)))
+        }
         discard_total <- read_table(paste0(outdir, ncout, "Discard.txt"), show_col_types = FALSE)
         discard_fishery <- read_table(paste0(outdir, ncout, "DiscardPerFishery.txt"), show_col_types = FALSE)
         effort <- read_table(paste0(outdir, ncout, "Effort.txt"), show_col_types = FALSE)
