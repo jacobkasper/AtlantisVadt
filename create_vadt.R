@@ -2,13 +2,26 @@ create_vadt <- function(outdir, funfile, fishfile = NULL,
                         outbgm, outbgmH, ncout, startyear, endyear,
                         toutinc, toutfinc, fishing = FALSE,
                         bmsummaries, naasummaries, harsummaries, ssbmri, ntot,
-                        caa                        ){
-    # constants
+                        caa) {
 
+    # ==============================================================================
+    # SETUP AND CONFIGURATION
+    # ==============================================================================
 
+    # Constants
+    nsecs <- 86400
+    ndays <- 365
+    g_per_ton <- 1e6
+    xCN <- 5.7
+    wetdry <- 20
+    startyear <- startyear - 1  # Adjust for time 0 in Atlantis
+    species <- c("BIRD", "FISH", "MAMMAL", "SHARK")
 
+    # ==============================================================================
+    # FILE DISCOVERY
+    # ==============================================================================
 
-    ##Holly's SSB
+    # Find required input files
     output.bgm <- basename(list.files(
         path = outdir,
         pattern = "^atlantis.*\\.bgm$",
@@ -21,109 +34,113 @@ create_vadt <- function(outdir, funfile, fishfile = NULL,
         full.names = TRUE
     ))
 
-
     input.bio <- basename(list.files(
         path = outdir,
         pattern = "^Bio.*\\.prm$",
         full.names = TRUE
     ))
 
-    #biolprm  <- paste0('../../output/Atlantis2025_03/', input.bio)
-    biolprm  <- paste0(outdir, "/", input.bio)
+    # Construct file paths
+    biolprm <- paste0(outdir, "/", input.bio)
+    dir.grps.csv <- list.files(
+        path = outdir,
+        full.names = TRUE,
+        recursive = FALSE,
+        pattern = funfile
+    )[1]
+
+    dir.bio.prm <- list.files(
+        path = outdir,
+        full.names = TRUE,
+        recursive = FALSE,
+        pattern = input.bio
+    )[1]
+
+    dir.harv.prm <- list.files(
+        path = outdir,
+        full.names = TRUE,
+        recursive = FALSE,
+        pattern = input.harvest
+    )[1]
+
+    dir.bgm.file <- list.files(
+        path = outdir,
+        full.names = TRUE,
+        recursive = FALSE,
+        pattern = output.bgm
+    )[1]
+
+    dir.out.nc <- paste0(outdir, '/Out.nc')
+
+    # ==============================================================================
+    # LOAD EXTERNAL FUNCTIONS
+    # ==============================================================================
 
     source('/heima/jacob/Atlantis/otherAtlantisTools/atlantis_tools_data_processing/extract_biomass_from_nc_out/R_tools_from_ReactiveAtlantis_new.R')
+
+    # ==============================================================================
+    # SETUP OUTPUT DIRECTORY
+    # ==============================================================================
+
     dir.outputs <- outdir
-    # path save location
-    dir.save <- paste0(dir.outputs,"/R_output/")
-    # make this directory if it does not already exist:
-    ifelse(!dir.exists(file.path(dir.save)), dir.create(file.path(dir.save)), FALSE)
-    # name of groups.csv input file
-    input.grps <- funfile
-    # name of groups.csv input file
-    #input.bio <- biolprmH
-    # name of groups.csv input file
-    # input.harvest <- harprmH
-    # name of bgm output file
-    #  output.bgm <- outbgmH
-    ####################' get data
+    dir.save <- paste0(dir.outputs, "/R_output/")
 
-    # groups data
-    dir.grps.csv <- list.files(path = outdir, #dir.inputs,
-                               full.names = TRUE,
-                               recursive = F,
-                               pattern = input.grps)[1]
-    grp <- utils::read.csv(dir.grps.csv) |>
-        filter(IsTurnedOn==1)
+    # Create output directory if it doesn't exist
+    if (!dir.exists(file.path(dir.save))) {
+        dir.create(file.path(dir.save))
+    }
 
-    # biology data
-    dir.bio.prm <- list.files(path = outdir,
-                              full.names = TRUE,
-                              recursive = F,
-                              pattern = input.bio)[1]
+    # ==============================================================================
+    # LOAD DATA
+    # ==============================================================================
 
-    # harvest data
-    dir.harv.prm <- list.files(path = outdir,
-                               full.names = TRUE,
-                               recursive = F,
-                               pattern = input.harvest)[1]
-    # bgm data
-    dir.bgm.file <- list.files(path = outdir,
-                               full.names = TRUE,
-                               recursive = F,
-                               pattern = output.bgm)[1]
-    inf.box <- boxes.prop(dir.bgm.file) # function from ReactiveAtlantis, I have edited it to isolate what is need (see source)
+    # Load functional groups (only turned on groups)
+    grp <- read.csv(dir.grps.csv) %>%
+        filter(IsTurnedOn == 1)
 
-    # output data from nc file
-    #dir.out.nc <- list.files(path = dir.outputs,
-    #                        full.names = TRUE,
-    #                         recursive = F,
-    #                        pattern = ".nc")[1]
-    dir.out.nc <- paste0(dir.outputs, '/Out.nc')
+    # Load box geometry
+    inf.box <- boxes.prop(dir.bgm.file)
+
+    # Open NetCDF output file
     nc.out <- ncdf4::nc_open(dir.out.nc)
+    Time <- nc.out$dim$t$vals / (60 * 60 * 24)  # Convert seconds to days
 
-    Time   <- nc.out$dim$t$vals / (60*60*24) # convert from seconds to days
+    # ==============================================================================
+    # PROCESS SSB DATA (Holly's method)
+    # ==============================================================================
 
+    # Filter to age-structured groups (excluding prawns)
+    age.grp <- grp %>%
+        filter(NumCohorts > 1, Code != "PWN")
 
-    age.grp <- grp[grp$NumCohorts  > 1,]
-    age.grp <- age.grp %>%
-        filter(Code != "PWN")
     unique_codes <- unique(age.grp$Code)
 
-    # Create a list to store the results
-    results <- vector("list", length(unique_codes))
-    names(results) <- unique_codes
-
-    # Loop over unique codes using dplyr to filter and apply the function
-    results <- lapply(unique_codes, function(code) {
-        age.grp.sub <- age.grp %>% filter(Code == code)  # Subset the data for each unique code
-        # Run the bio.age function
-        bio.age(age.grp = age.grp.sub,
-                nc.out  = nc.out,
+    # Calculate SSB for each age-structured group
+    results <- unique_codes %>%
+        set_names() %>%
+        map(~{
+            age.grp.sub <- age.grp %>% filter(Code == .x)
+            bio.age(
+                age.grp = age.grp.sub,
+                nc.out = nc.out,
                 inf.box = inf.box,
-                Time    = Time,
+                Time = Time,
                 flag.return.whole.system.biomass = TRUE,
-                path.bio.prm = dir.bio.prm)
+                path.bio.prm = dir.bio.prm
+            )
+        })
 
-    })
-
-    # Name the results by unique codes for easy reference
-    names(results) <- unique_codes
-    ssbholly <- map_df(results, ~ as_tibble(.x), .id = "Code") %>%
-        left_join(age.grp) %>%
+    # Combine SSB results
+    ssbholly <- results %>%
+        map_dfr(~as_tibble(.x), .id = "Code") %>%
+        left_join(age.grp, by = "Code") %>%
         select(Time, Name, Biomass)
 
+    # ==============================================================================
+    # CONTINUE WITH REST OF DATA PROCESSING...
+    # ==============================================================================
 
 
-    ####
-
-    nsecs <- 86400
-    ndays <- 365
-    g_per_ton <- 1e6
-    xCN <- 5.7
-    wetdry <- 20
-
-    startyear <- startyear - 1 ##jmk to adjust for time 0 in Atlantis
-    species <- c("BIRD", "FISH", "MAMMAL", "SHARK")
     tons <- function(mgN) {
         return(mgN * 5.7 * 20 / 1e9)
     }
@@ -280,7 +297,7 @@ create_vadt <- function(outdir, funfile, fishfile = NULL,
         arrange(Index) %>%
         mutate(
             Name = factor(Name, levels = unique(Name)),
-            Time = round(Time / 365),
+            Time = (Time / 365), ##deleted round
             Time = if_else(Time > 0, Time + startyear, Time)
         ) %>%
         filter(Time > 0)
@@ -768,7 +785,7 @@ create_vadt <- function(outdir, funfile, fishfile = NULL,
     # Filter and transform
     diet_l <- diet_l %>%
         filter(Time > 0) %>%
-        mutate(Time = startyear + round(Time / 365))
+        mutate(Time = startyear + (Time / 365)) ##deleted round
 
     # Summarize
     tot_pred <- diet_l %>%
@@ -808,7 +825,7 @@ create_vadt <- function(outdir, funfile, fishfile = NULL,
         arrange(Index) %>%
         mutate(Name = factor(Name, levels = unique(Name))) %>%
         filter(Time > 0) %>%
-        mutate(Time = startyear + round(Time / 365))
+        mutate(Time = startyear + (Time / 365))  ##deleted round
 
     # Process invertebrates
     tot_bio_i <- tot_bio_l %>%
@@ -817,7 +834,7 @@ create_vadt <- function(outdir, funfile, fishfile = NULL,
         arrange(Index) %>%
         mutate(Name = factor(Name, levels = unique(Name))) %>%
         filter(Time > 0) %>%
-        mutate(Time = startyear + round(Time / 365))
+        mutate(Time = startyear + (Time / 365))  ##deleted round
 
     # Rename columns (tot_bio already has correct column names from biomass)
     # rel_bio columns are "Time", "RelFCD", "RelFHA", ... "RelDIN"
@@ -826,11 +843,11 @@ create_vadt <- function(outdir, funfile, fishfile = NULL,
     # Filter and transform time
     rel_bio <- rel_bio %>%
         filter(Time > 0) %>%
-        mutate(Time = startyear + round(Time / 365))
+        mutate(Time = startyear + (Time / 365))  ##deleted round
 
     tot_bio <- tot_bio %>%
         filter(Time > 0) %>%
-        mutate(Time = startyear + round(Time / 365))
+        mutate(Time = startyear + (Time / 365))  ##deleted round
 
 
     ## YOY Plots
@@ -887,16 +904,16 @@ create_vadt <- function(outdir, funfile, fishfile = NULL,
 
     yoy <- yoy %>%
         filter(Time > 0) %>%
-        mutate(Time = startyear + round(Time / 365))
+        mutate(Time = startyear + (Time / 365)) ##deleted round
 
     yoy_nums <- yoy_nums %>%
         filter(Time > 0) %>%
-        mutate(Time = startyear + round(Time / 365))
+        mutate(Time = startyear + (Time / 365)) ##deleted round
 
     ## SSB PLOTS
     ssb <- ssbholly %>%
         filter(Time > 0) %>%
-        mutate(Time = startyear + round(Time / 365)) %>%
+        mutate(Time = startyear + (Time / 365)) |> ##deleted round
         group_by(Time, Name) %>%
         summarise(Biomass = sum(Biomass, na.rm = TRUE), .groups = "drop") %>%
         pivot_wider(names_from = 'Name', values_from = 'Biomass')
@@ -927,8 +944,11 @@ create_vadt <- function(outdir, funfile, fishfile = NULL,
             set_names() %>%
             map(~ncdf4::ncvar_get(prod_out, .x)) %>%
             map(colSums) %>%
-            imap_dfr(~tibble(id = .y, !!!set_names(.x, as.character(time)))) %>%
-            pivot_longer(cols = -id, names_to = "variable", values_to = "value")
+            imap_dfr(~tibble(
+                         id = .y,
+                         Time = time,
+                         value = .x
+                     ))
     }
 
     # Read in and convert to long format
@@ -1002,7 +1022,7 @@ create_vadt <- function(outdir, funfile, fishfile = NULL,
 
         fish_fishery_l <- fish_fishery %>%
             pivot_longer(cols = -(Time:Fishery), names_to = "Group", values_to = "biomass") %>%
-            mutate(Time = round(startyear + Time / 365)) %>%
+            mutate(Time = (startyear + Time / 365)) %>% ##deleted round
             left_join(fish_groups, by = c("Fishery" = "Code")) %>%
             select(-IsRec, -NumSubFleets, -Fishery, -Index) %>%
             rename(Fishery = Name) %>%
@@ -1045,7 +1065,7 @@ create_vadt <- function(outdir, funfile, fishfile = NULL,
         effort_l <- effort %>%
             pivot_longer(cols = -Time, names_to = "Fishery", values_to = "Effort") %>%
             mutate(
-                Time = round(Time / 365),
+                Time = (Time / 365), ##deleted round
                 Time = Time + startyear
             ) %>%
             filter(Time > startyear)  # Remove time zero
@@ -1057,7 +1077,7 @@ create_vadt <- function(outdir, funfile, fishfile = NULL,
             pivot_longer(cols = -Time, names_to = "Group", values_to = "Discards") %>%
             mutate(Group = fun_group$Name[match(Group, fun_group$Code)]) %>%
             filter(Time > 0) %>%
-            mutate(Time = startyear + round(Time / 365)) %>%
+            mutate(Time = startyear + (Time / 365)) %>% ##deleted round
             inner_join(fish_biomass_year_l) %>%  # Join on all common columns
             mutate(prop_disc = Discards / (Biomass + Discards))
 
